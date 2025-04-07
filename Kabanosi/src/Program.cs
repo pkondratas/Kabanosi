@@ -16,49 +16,49 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(p =>
     {
         p.WithOrigins("https://localhost:3000")
-         .AllowAnyHeader()
-         .AllowAnyMethod();
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
 var connectionString = builder.Configuration.GetConnectionString("AzureMySql");
-builder.Services.AddDbContext<DatabaseContext>(options => 
+builder.Services.AddDbContext<DatabaseContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
 builder.Services.AddIdentity<User, IdentityRole>()
-       .AddEntityFrameworkStores<DatabaseContext>();
+    .AddEntityFrameworkStores<DatabaseContext>();
 
 var key = builder.Configuration.GetValue<string>("JwtSettings:Secret");
 builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.RequireHttpsMetadata = false;
-    options.SaveToken = true;
-    options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey        = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
-        ValidateIssuer          = false,
-        ValidateAudience        = false
-    };
-});
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = false;
+        options.SaveToken = true;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+    });
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
     {
-        In          = ParameterLocation.Header,
-        Name        = "Authorization",
+        In = ParameterLocation.Header,
+        Name = "Authorization",
         Description = "JWT Authorization header using the Bearer scheme.\r\n\r\n" +
                       "Enter 'Bearer' [space] and then your token.\r\n\r\n" +
                       "Example: Bearer 12345abcdefgh",
         BearerFormat = "JWT",
-        Scheme       = JwtBearerDefaults.AuthenticationScheme
+        Scheme = JwtBearerDefaults.AuthenticationScheme
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -66,14 +66,14 @@ builder.Services.AddSwaggerGen(options =>
         {
             new OpenApiSecurityScheme
             {
-               Reference = new OpenApiReference
-               {
-                   Type = ReferenceType.SecurityScheme,
-                   Id   = "Bearer"
-               },
-               Scheme = "oauth2",
-               Name   = "Bearer",
-               In     = ParameterLocation.Header
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header
             },
             new List<string>()
         }
