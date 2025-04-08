@@ -1,7 +1,7 @@
-using System.Net;
 using Kabanosi.Entities;
 using Kabanosi.Entities.Dtos.Auth;
-using Kabanosi.Persistence;
+using Kabanosi.Services;
+using Kabanosi.Settings;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,17 +11,13 @@ namespace Kabanosi.Controllers;
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly DatabaseContext _db;
     private readonly UserManager<User> _userManager;
-    private readonly string _secretKey;
+    private readonly ITokenService _tokenService;
 
-    public AuthController(DatabaseContext db,
-        UserManager<User> userManager,
-        IConfiguration configuration)
+    public AuthController(UserManager<User> userManager, ITokenService tokenService)
     {
-        _db = db;
         _userManager = userManager;
-        _secretKey = configuration.GetValue<string>("JwtSettings:Secret");
+        _tokenService = tokenService;
     }
 
     [HttpPost("register")]
@@ -64,5 +60,30 @@ public class AuthController : ControllerBase
                 Message = "An unexpected error occurred while registering the user."
             });
         }
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var existingUser = await _userManager.FindByEmailAsync(loginRequestDto.Email);
+        if (existingUser == null || !await _userManager.CheckPasswordAsync(existingUser, loginRequestDto.Password))
+        {
+            return Unauthorized(new { Message = "Username or password is incorrect" });
+        }
+
+        var token = _tokenService.GenerateToken(existingUser);
+        
+        var loginResponse = new LoginResponseDto
+        {
+            UserId = existingUser.Id,
+            Email = existingUser.Email,
+            UserName = existingUser.UserName,
+            Token = token
+        };
+
+        return Ok(loginResponse);
     }
 }

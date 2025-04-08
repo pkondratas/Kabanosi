@@ -1,6 +1,8 @@
 using System.Text;
 using Kabanosi.Entities;
 using Kabanosi.Persistence;
+using Kabanosi.Services;
+using Kabanosi.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -28,7 +30,15 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<DatabaseContext>();
 
-var key = builder.Configuration.GetValue<string>("JwtSettings:Secret");
+var jwtSettings = builder.Configuration
+    .GetSection("JwtSettings")
+    .Get<JwtSettings>();
+builder.Services.AddSingleton(jwtSettings);
+
+// App services
+builder.Services.AddScoped<ITokenService, TokenService>();
+
+var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -41,7 +51,7 @@ builder.Services.AddAuthentication(options =>
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(key)),
+            IssuerSigningKey = new SymmetricSecurityKey(key),
             ValidateIssuer = false,
             ValidateAudience = false
         };
