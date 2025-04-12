@@ -1,7 +1,9 @@
 using System.Text;
 using Kabanosi.Entities;
 using Kabanosi.Persistence;
+using Kabanosi.Repositories;
 using Kabanosi.Services;
+using Kabanosi.Services.Interfaces;
 using Kabanosi.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -37,6 +39,11 @@ builder.Services.AddSingleton(jwtSettings);
 
 // App services
 builder.Services.AddScoped<ITokenService, TokenService>();
+
+builder.Services.AddScoped<IProjectService, ProjectService>();
+
+// Repositories
+builder.Services.AddScoped<ProjectRepository>();
 
 var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 builder.Services.AddAuthentication(options =>
