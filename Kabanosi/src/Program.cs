@@ -1,4 +1,6 @@
+using System.Net;
 using System.Text;
+using Kabanosi.Extensions;
 using Kabanosi.Entities;
 using Kabanosi.Persistence;
 using Kabanosi.Services;
@@ -91,6 +93,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+app.UseExceptionHandling(
+    new Dictionary<Type, HttpStatusCode>
+    {
+        
+    });
 
 if (app.Environment.IsDevelopment())
 {
