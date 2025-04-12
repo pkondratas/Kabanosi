@@ -1,0 +1,89 @@
+using Kabanosi.Entities;
+using Kabanosi.Entities.Dtos.Auth;
+using Kabanosi.Services;
+using Kabanosi.Settings;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Kabanosi.Controllers;
+
+[ApiController]
+[Route("api/auth")]
+public class AuthController : ControllerBase
+{
+    private readonly UserManager<User> _userManager;
+    private readonly ITokenService _tokenService;
+
+    public AuthController(UserManager<User> userManager, ITokenService tokenService)
+    {
+        _userManager = userManager;
+        _tokenService = tokenService;
+    }
+
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequestDto registerRequestDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var existingUser = await _userManager.FindByEmailAsync(registerRequestDto.Email);
+        if (existingUser != null)
+            return BadRequest("Email already exists");
+
+        try
+        {
+            var newUser = new User
+            {
+                UserName = registerRequestDto.UserName,
+                Email = registerRequestDto.Email,
+            };
+
+            var result = await _userManager.CreateAsync(newUser, registerRequestDto.Password);
+
+            if (!result.Succeeded)
+            {
+                var errors = result.Errors.Select(e => e.Description);
+                return BadRequest(new { Errors = errors });
+            }
+
+            return Ok(new
+            {
+                Message = "User registered successfully",
+                UserId = newUser.Id,
+            });
+        }
+        catch (Exception ex)
+        {
+            // Add logging later
+            return StatusCode(500, new
+            {
+                Message = "An unexpected error occurred while registering the user."
+            });
+        }
+    }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequestDto loginRequestDto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var existingUser = await _userManager.FindByEmailAsync(loginRequestDto.Email);
+        if (existingUser == null || !await _userManager.CheckPasswordAsync(existingUser, loginRequestDto.Password))
+        {
+            return Unauthorized(new { Message = "Username or password is incorrect" });
+        }
+
+        var token = _tokenService.GenerateToken(existingUser);
+        
+        var loginResponse = new LoginResponseDto
+        {
+            UserId = existingUser.Id,
+            Email = existingUser.Email,
+            UserName = existingUser.UserName,
+            Token = token
+        };
+
+        return Ok(loginResponse);
+    }
+}
