@@ -1,7 +1,6 @@
+using Kabanosi.Dtos.Auth;
 using Kabanosi.Entities;
-using Kabanosi.Entities.Dtos.Auth;
-using Kabanosi.Services;
-using Kabanosi.Settings;
+using Kabanosi.Services.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +11,7 @@ namespace Kabanosi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
-    private readonly ITokenService _tokenService;
+    private readonly  ITokenService _tokenService;
 
     public AuthController(UserManager<User> userManager, ITokenService tokenService)
     {

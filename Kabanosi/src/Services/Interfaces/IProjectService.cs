@@ -4,5 +4,6 @@ namespace Kabanosi.Services.Interfaces;
 
 public interface IProjectService
 {
-    Task<IList<ProjectResponseDto>> GetProjectsAsync(int pageSize, int pageNumber);
+    Task<ProjectResponseDto> CreateProjectAsync(ProjectRequestDto projectDto, CancellationToken cancellationToken);
+    Task<IList<ProjectResponseDto>> GetProjectsAsync(int pageSize, int pageNumber, CancellationToken cancellationToken);
 }

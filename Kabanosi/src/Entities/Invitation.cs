@@ -15,11 +15,11 @@ namespace Kabanosi.Entities
         
         public string UserId { get; set; } = null!;
         [ForeignKey("UserId")]
-        public virtual User User { get; set; } = null!;
+        public User User { get; set; } = null!;
 
         [Timestamp]
         public required byte[] Version { get; set; }
 
-        public virtual Project Project { get; set; } = null!;
+        public Project Project { get; set; } = null!;
     }
 }

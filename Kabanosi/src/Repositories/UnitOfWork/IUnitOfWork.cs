@@ -1,11 +1,11 @@
+using Kabanosi.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kabanosi.Repositories.UnitOfWork;
 
-public interface IUnitOfWork<out TContext> 
-    where TContext : DbContext
+public interface IUnitOfWork
 {
-    public TContext Context { get; }
+    public DatabaseContext Context { get; }
 
     Task CreateTransactionAsync();
     Task CommitAsync();

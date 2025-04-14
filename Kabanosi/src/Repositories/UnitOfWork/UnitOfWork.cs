@@ -1,14 +1,13 @@
-using Microsoft.EntityFrameworkCore;
+using Kabanosi.Persistence;
 using Microsoft.EntityFrameworkCore.Storage;
 
 namespace Kabanosi.Repositories.UnitOfWork
 {
-    public class UnitOfWork<TContext>(TContext context) : IUnitOfWork<TContext>, IAsyncDisposable 
-        where TContext : DbContext
+    public class UnitOfWork(DatabaseContext context) : IUnitOfWork, IAsyncDisposable
     {
         private bool _disposed;
         private IDbContextTransaction _transaction = null!;
-        public TContext Context { get; } = context;
+        public DatabaseContext Context { get; } = context;
 
         public async Task CreateTransactionAsync()
         {
