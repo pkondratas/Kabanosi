@@ -1,4 +1,4 @@
-namespace Kabanosi.Entities;
+namespace Kabanosi.Constants;
 
 public enum ProjectRole
 {

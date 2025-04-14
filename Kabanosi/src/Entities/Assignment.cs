@@ -22,10 +22,10 @@ namespace Kabanosi.Entities
         [Timestamp]
         public required byte[] Version { get; set; }
 
-        public virtual Project Project { get; set; } = null!;
-        public virtual AssignmentStatus AssignmentStatus { get; set; } = null!;
-        public virtual AssignmentLabel? AssignmentLabel { get; set; }
-        public virtual ICollection<ProjectMemberAssignment> ProjectParticipantAssignments { get; set; } = [];
-        public virtual ICollection<Comment> Comments { get; set; } = [];
+        public Project Project { get; set; } = null!;
+        public AssignmentStatus AssignmentStatus { get; set; } = null!;
+        public AssignmentLabel? AssignmentLabel { get; set; }
+        public ICollection<ProjectMemberAssignment> ProjectParticipantAssignments { get; set; } = [];
+        public ICollection<Comment> Comments { get; set; } = [];
     }
 }

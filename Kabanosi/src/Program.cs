@@ -3,7 +3,11 @@ using System.Text;
 using Kabanosi.Extensions;
 using Kabanosi.Entities;
 using Kabanosi.Persistence;
+using Kabanosi.Profiles;
+using Kabanosi.Repositories;
+using Kabanosi.Repositories.UnitOfWork;
 using Kabanosi.Services;
+using Kabanosi.Services.Interfaces;
 using Kabanosi.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -32,6 +36,8 @@ builder.Services.AddDbContext<DatabaseContext>(options =>
 builder.Services.AddIdentity<User, IdentityRole>()
     .AddEntityFrameworkStores<DatabaseContext>();
 
+builder.Services.AddAutoMapper(typeof(MappingProfile));
+
 var jwtSettings = builder.Configuration
     .GetSection("JwtSettings")
     .Get<JwtSettings>();
@@ -39,6 +45,12 @@ builder.Services.AddSingleton(jwtSettings);
 
 // App services
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IProjectService, ProjectService>();
+
+// Repositories
+builder.Services.AddScoped<ProjectRepository>();
 
 var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 builder.Services.AddAuthentication(options =>

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Kabanosi.Entities;
+using Kabanosi.Services.Interfaces;
 using Kabanosi.Settings;
 using Microsoft.IdentityModel.Tokens;
 

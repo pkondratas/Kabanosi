@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Kabanosi.Constants;
 
 namespace Kabanosi.Entities
 {
@@ -15,13 +16,13 @@ namespace Kabanosi.Entities
         
         public string UserId { get; set; } = null!;
         [ForeignKey("UserId")]
-        public virtual User User { get; set; } = null!;
+        public User User { get; set; } = null!;
 
         [Timestamp]
         public required byte[] Version { get; set; }
 
-        public virtual ICollection<ProjectMemberAssignment> ProjectMemberAssignments { get; set; } = [];
-        public virtual ICollection<Project> Projects { get; set; } = [];
-        public virtual ICollection<Comment> Comments { get; set; } = [];
+        public ICollection<ProjectMemberAssignment> ProjectMemberAssignments { get; set; } = [];
+        public ICollection<Project> Projects { get; set; } = [];
+        public ICollection<Comment> Comments { get; set; } = [];
     }
 }

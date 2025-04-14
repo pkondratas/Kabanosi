@@ -15,10 +15,10 @@ namespace Kabanosi.Entities
         [Timestamp]
         public required byte[] Version { get; set; }
 
-        public virtual ICollection<Assignment> Assignments { get; set; } = [];
-        public virtual ICollection<AssignmentStatus> AssignmentStatuses { get; set; } = [];
-        public virtual ICollection<AssignmentLabel> AssignmentLabels { get; set; } = [];
-        public virtual ICollection<ProjectMember> ProjectMembers { get; set; } = [];
-        public virtual ICollection<Invitation> Invitations { get; set; } = [];
+        public ICollection<Assignment> Assignments { get; set; } = [];
+        public ICollection<AssignmentStatus> AssignmentStatuses { get; set; } = [];
+        public ICollection<AssignmentLabel> AssignmentLabels { get; set; } = [];
+        public ICollection<ProjectMember> ProjectMembers { get; set; } = [];
+        public ICollection<Invitation> Invitations { get; set; } = [];
     }
 }

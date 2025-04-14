@@ -1,6 +1,6 @@
 using Kabanosi.Entities;
 
-namespace Kabanosi.Services;
+namespace Kabanosi.Services.Interfaces;
 
 public interface ITokenService
 {
