@@ -307,3 +307,4 @@ FakesAssemblies/
 *.opt
 
 .idea/
+**/Logs/

@@ -1,7 +1,11 @@
 using System.Net;
 using System.Text;
+using Autofac;
+using Autofac.Extensions.DependencyInjection;
+using Autofac.Extras.DynamicProxy;
 using Kabanosi.Extensions;
 using Kabanosi.Entities;
+using Kabanosi.Interceptors;
 using Kabanosi.Persistence;
 using Kabanosi.Profiles;
 using Kabanosi.Repositories;
@@ -14,6 +18,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +28,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(p =>
     {
-        p.WithOrigins("https://localhost:3000")
+        p.AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
@@ -104,12 +109,30 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+builder.Host.UseSerilog();
+
+builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
+{
+    containerBuilder.RegisterGeneric(typeof(InterceptorAdapter<>));
+    containerBuilder.RegisterType<LoggingInterceptor>().InstancePerLifetimeScope(); 
+    
+    containerBuilder.RegisterAssemblyTypes(typeof(Program).Assembly)
+        .AsImplementedInterfaces()
+        .InstancePerDependency()
+        .EnableInterfaceInterceptors()
+        .InterceptedBy(typeof(InterceptorAdapter<LoggingInterceptor>));
+});
+
 var app = builder.Build();
 
 app.UseExceptionHandling(
     new Dictionary<Type, HttpStatusCode>
     {
-        
     });
 
 if (app.Environment.IsDevelopment())
