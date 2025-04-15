@@ -1,4 +1,4 @@
-namespace Kabanosi.Entities.Dtos.Auth;
+namespace Kabanosi.Dtos.Auth;
 
 public class LoginResponseDto
 {

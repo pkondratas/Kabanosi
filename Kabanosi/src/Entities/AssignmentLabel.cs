@@ -16,7 +16,7 @@ namespace Kabanosi.Entities
         [Timestamp]
         public required byte[] Version { get; set; }
 
-        public virtual Project Project { get; set; } = null!;
-        public virtual ICollection<Assignment> Assignments { get; set; } = [];
+        public Project Project { get; set; } = null!;
+        public ICollection<Assignment> Assignments { get; set; } = [];
     }
 }
