@@ -58,11 +58,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
 
-
 builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
-
-builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
-
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("ProjectAdminOnly", policy =>
         policy.Requirements.Add(new ProjectRoleRequirement([nameof(ProjectRole.ProjectAdmin)])))
@@ -71,10 +67,10 @@ builder.Services.AddAuthorizationBuilder()
             nameof(ProjectRole.ProjectAdmin),
             nameof(ProjectRole.ProjectMember)
         ])));
-;
 
 // Repositories
 builder.Services.AddScoped<ProjectRepository>();
+builder.Services.AddScoped<ProjectMemberRepository>();
 
 var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 builder.Services.AddAuthentication(options =>

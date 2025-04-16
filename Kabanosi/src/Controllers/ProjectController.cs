@@ -1,5 +1,6 @@
 using Kabanosi.Dtos.Project;
 using Kabanosi.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Kabanosi.Controllers;
@@ -9,6 +10,7 @@ namespace Kabanosi.Controllers;
 public class ProjectController(IProjectService projectService) : ControllerBase
 {
     [HttpPost]
+    [Authorize]
     public async Task<IActionResult> CreateProjectAsync(
         [FromBody] ProjectRequestDto projectDto,
         CancellationToken cancellationToken = default)
@@ -20,13 +22,14 @@ public class ProjectController(IProjectService projectService) : ControllerBase
         return Ok(result);
     }
 
-
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetProjectsAsync(
-        [FromQuery] int pageSize = 10, 
+        [FromQuery] int pageSize = 10,
         [FromQuery] int pageNumber = 0,
         CancellationToken cancellationToken = default)
     {
+        // TODO: filter projects that user is a member of
         return Ok(await projectService.GetProjectsAsync(pageSize, pageNumber, cancellationToken));
     }
 }

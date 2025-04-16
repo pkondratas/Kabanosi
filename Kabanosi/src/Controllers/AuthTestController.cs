@@ -13,4 +13,24 @@ public class AuthTestController : ControllerBase
     {
         return Ok("You are authenticated");
     }
+    
+    [HttpGet("project-admin-test")]
+    [Authorize(Policy = "ProjectAdminOnly")]
+    public IActionResult TestAdminAccess()
+    {
+        return Ok(new
+        {
+            Message = "You are a Project Admin."
+        });
+    }
+    
+    [HttpGet("project-admin-or-member-test")]
+    [Authorize(Policy = "ProjectAdminOrMember")]
+    public IActionResult TestAdminOrMemberAccess()
+    {
+        return Ok(new
+        {
+            Message = "You are either a Project Admin or Member."
+        });
+    }
 }

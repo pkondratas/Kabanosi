@@ -12,13 +12,14 @@ namespace Kabanosi.Entities
 
         public required ProjectRole ProjectRole { get; set; }
 
-        public string UserId { get; set; } = null!;
+        public required string UserId { get; set; } = null!;
         public User User { get; set; } = null!;
 
-        public Guid ProjectId { get; set; }
+        public required Guid ProjectId { get; set; }
         public Project Project { get; set; } = null!;
 
-        [Timestamp] public required byte[] Version { get; set; }
+        [Timestamp] 
+        public byte[] Version { get; set; } = [];
 
         public ICollection<ProjectMemberAssignment> ProjectMemberAssignments { get; set; } = [];
         public ICollection<Comment> Comments { get; set; } = [];
