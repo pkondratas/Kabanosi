@@ -1,3 +1,4 @@
+using AutoMapper;
 using Kabanosi.Dtos.Auth;
 using Kabanosi.Entities;
 using Kabanosi.Services.Interfaces;
@@ -7,16 +8,18 @@ using Microsoft.AspNetCore.Mvc;
 namespace Kabanosi.Controllers;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/v1/auth")]
 public class AuthController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
     private readonly  ITokenService _tokenService;
+    private readonly IMapper _mapper;
 
-    public AuthController(UserManager<User> userManager, ITokenService tokenService)
+    public AuthController(UserManager<User> userManager, ITokenService tokenService, IMapper mapper)
     {
         _userManager = userManager;
         _tokenService = tokenService;
+        _mapper = mapper;
     }
 
     [HttpPost("register")]
@@ -31,11 +34,7 @@ public class AuthController : ControllerBase
 
         try
         {
-            var newUser = new User
-            {
-                UserName = registerRequestDto.UserName,
-                Email = registerRequestDto.Email,
-            };
+            var newUser = _mapper.Map<User>(registerRequestDto);
 
             var result = await _userManager.CreateAsync(newUser, registerRequestDto.Password);
 
@@ -75,13 +74,8 @@ public class AuthController : ControllerBase
 
         var token = _tokenService.GenerateToken(existingUser);
         
-        var loginResponse = new LoginResponseDto
-        {
-            UserId = existingUser.Id,
-            Email = existingUser.Email,
-            UserName = existingUser.UserName,
-            Token = token
-        };
+        var loginResponse = _mapper.Map<LoginResponseDto>(existingUser);
+        loginResponse = loginResponse with { Token = token };
 
         return Ok(loginResponse);
     }

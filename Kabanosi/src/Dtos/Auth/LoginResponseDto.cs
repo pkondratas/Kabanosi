@@ -1,11 +1,10 @@
 namespace Kabanosi.Dtos.Auth;
 
-public class LoginResponseDto
+public record LoginResponseDto
 {
-    public required string UserId { get; set; }
-    public required string Email { get; set; }
-    public required string UserName { get; set; }
-    public required string Token { get; set; }
-    
-    public string Message { get; set; } = "Login successful";
+    public string UserId { get; init; } = string.Empty;
+    public string Email { get; init; } = string.Empty;
+    public string UserName { get; init; } = string.Empty;
+    public string Token { get; init; } = string.Empty;
+    public string Message { get; init; } = "Login successful";
 }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Kabanosi.Controllers;
 
 [ApiController]
-[Route("api/auth-test")]
+[Route("api/v1/auth-test")]
 public class AuthTestController : ControllerBase
 {
     [HttpGet]

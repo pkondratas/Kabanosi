@@ -2,13 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Kabanosi.Dtos.Auth;
 
-public class LoginRequestDto
+public record LoginRequestDto
 {
     [Required]
     [EmailAddress]
-    public required string Email { get; set; }
+    public required string Email { get; init; } = string.Empty;
 
     [Required]
     [DataType(DataType.Password)]
-    public required string Password { get; set; }
+    public required string Password { get; init; } = string.Empty;
 }

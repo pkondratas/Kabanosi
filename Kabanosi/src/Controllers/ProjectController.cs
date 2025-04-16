@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Kabanosi.Controllers;
 
 [ApiController]
-[Route("v1/projects")]
+[Route("api/v1/projects")]
 public class ProjectController(IProjectService projectService) : ControllerBase
 {
     [HttpPost]
@@ -13,8 +13,13 @@ public class ProjectController(IProjectService projectService) : ControllerBase
         [FromBody] ProjectRequestDto projectDto,
         CancellationToken cancellationToken = default)
     {
-        return Ok(await projectService.CreateProjectAsync(projectDto, cancellationToken));
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var result = await projectService.CreateProjectAsync(projectDto, cancellationToken);
+        return Ok(result);
     }
+
 
     [HttpGet]
     public async Task<IActionResult> GetProjectsAsync(
