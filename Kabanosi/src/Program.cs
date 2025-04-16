@@ -3,6 +3,8 @@ using System.Text;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Autofac.Extras.DynamicProxy;
+using Kabanosi.Authorization;
+using Kabanosi.Constants;
 using Kabanosi.Extensions;
 using Kabanosi.Entities;
 using Kabanosi.Interceptors;
@@ -13,7 +15,9 @@ using Kabanosi.Repositories.UnitOfWork;
 using Kabanosi.Services;
 using Kabanosi.Services.Interfaces;
 using Kabanosi.Settings;
+using Kabanosi.Settings.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -49,10 +53,25 @@ var jwtSettings = builder.Configuration
 builder.Services.AddSingleton(jwtSettings);
 
 // App services
-builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+
+
+builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
+
+builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
+
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("ProjectAdminOnly", policy =>
+        policy.Requirements.Add(new ProjectRoleRequirement([nameof(ProjectRole.ProjectAdmin)])))
+    .AddPolicy("ProjectAdminOrMember", policy =>
+        policy.Requirements.Add(new ProjectRoleRequirement([
+            nameof(ProjectRole.ProjectAdmin),
+            nameof(ProjectRole.ProjectMember)
+        ])));
+;
 
 // Repositories
 builder.Services.AddScoped<ProjectRepository>();
@@ -77,6 +96,7 @@ builder.Services.AddAuthentication(options =>
     });
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.AddSecurityDefinition(JwtBearerDefaults.AuthenticationScheme, new OpenApiSecurityScheme
@@ -84,10 +104,11 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Name = "Authorization",
         Description = "JWT Authorization header using the Bearer scheme.\r\n\r\n" +
-                      "Enter 'Bearer' [space] and then your token.\r\n\r\n" +
-                      "Example: Bearer 12345abcdefgh",
+                      "Enter {yourToken}\r\n\r\n" +
+                      "Example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
         BearerFormat = "JWT",
-        Scheme = JwtBearerDefaults.AuthenticationScheme
+        Scheme = JwtBearerDefaults.AuthenticationScheme,
+        Type = SecuritySchemeType.Http
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -98,7 +119,7 @@ builder.Services.AddSwaggerGen(options =>
                 Reference = new OpenApiReference
                 {
                     Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
+                    Id = JwtBearerDefaults.AuthenticationScheme
                 },
                 Scheme = "oauth2",
                 Name = "Bearer",
@@ -107,6 +128,8 @@ builder.Services.AddSwaggerGen(options =>
             new List<string>()
         }
     });
+
+    options.OperationFilter<AddProjectIdHeaderOperationFilter>();
 });
 
 Log.Logger = new LoggerConfiguration()
@@ -119,8 +142,8 @@ builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(containerBuilder =>
 {
     containerBuilder.RegisterGeneric(typeof(InterceptorAdapter<>));
-    containerBuilder.RegisterType<LoggingInterceptor>().InstancePerLifetimeScope(); 
-    
+    containerBuilder.RegisterType<LoggingInterceptor>().InstancePerLifetimeScope();
+
     containerBuilder.RegisterAssemblyTypes(typeof(Program).Assembly)
         .AsImplementedInterfaces()
         .InstancePerDependency()

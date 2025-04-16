@@ -12,7 +12,7 @@ namespace Kabanosi.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
-    private readonly  ITokenService _tokenService;
+    private readonly ITokenService _tokenService;
     private readonly IMapper _mapper;
 
     public AuthController(UserManager<User> userManager, ITokenService tokenService, IMapper mapper)
@@ -69,11 +69,11 @@ public class AuthController : ControllerBase
         var existingUser = await _userManager.FindByEmailAsync(loginRequestDto.Email);
         if (existingUser == null || !await _userManager.CheckPasswordAsync(existingUser, loginRequestDto.Password))
         {
-            return Unauthorized(new { Message = "Username or password is incorrect" });
+            return Unauthorized(new { Message = "Username or password is incorrect." });
         }
 
         var token = _tokenService.GenerateToken(existingUser);
-        
+
         var loginResponse = _mapper.Map<LoginResponseDto>(existingUser);
         loginResponse = loginResponse with { Token = token };
 
