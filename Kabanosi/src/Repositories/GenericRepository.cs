@@ -45,13 +45,14 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
     public virtual async Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken)
     {
         return (await dbSet
-            .AddAsync(entity, cancellationToken))
+                .AddAsync(entity, cancellationToken))
             .Entity;
     }
 
     public virtual async Task DeleteAsync(object id, CancellationToken cancellationToken)
     {
-        var entityToDelete = await dbSet.FindAsync([id], cancellationToken) ?? throw new NotFoundException(ErrorMessages.ENTITY_NOT_FOUND);
+        var entityToDelete = await dbSet.FindAsync([id], cancellationToken) ??
+                             throw new NotFoundException(ErrorMessages.ENTITY_NOT_FOUND);
         Delete(entityToDelete);
     }
 
@@ -65,7 +66,8 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
         dbSet.Remove(entityToDelete);
     }
 
-    private static IQueryable<TEntity> ApplyIncludes(IQueryable<TEntity> query, params Expression<Func<TEntity, object>>[] includes)
+    private static IQueryable<TEntity> ApplyIncludes(IQueryable<TEntity> query,
+        params Expression<Func<TEntity, object>>[] includes)
     {
         foreach (var include in includes)
             query = query.Include(include);
