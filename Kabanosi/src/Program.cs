@@ -7,6 +7,7 @@ using Kabanosi.Authorization;
 using Kabanosi.Constants;
 using Kabanosi.Extensions;
 using Kabanosi.Entities;
+using Kabanosi.Exceptions;
 using Kabanosi.Interceptors;
 using Kabanosi.Persistence;
 using Kabanosi.Profiles;
@@ -15,7 +16,6 @@ using Kabanosi.Repositories.UnitOfWork;
 using Kabanosi.Services;
 using Kabanosi.Services.Interfaces;
 using Kabanosi.Settings;
-using Kabanosi.Settings.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -57,12 +57,15 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IInvitationService, InvitationService>();
 
 builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
+
+// Custom policy-based authorization (project scoped auth)
 builder.Services.AddAuthorizationBuilder()
-    .AddPolicy("ProjectAdminOnly", policy =>
+    .AddPolicy("ProjectMemberAndAdmin", policy =>
         policy.Requirements.Add(new ProjectRoleRequirement([nameof(ProjectRole.ProjectAdmin)])))
-    .AddPolicy("ProjectAdminOrMember", policy =>
+    .AddPolicy("ProjectMemberAndAdminOrMember", policy =>
         policy.Requirements.Add(new ProjectRoleRequirement([
             nameof(ProjectRole.ProjectAdmin),
             nameof(ProjectRole.ProjectMember)
@@ -71,6 +74,7 @@ builder.Services.AddAuthorizationBuilder()
 // Repositories
 builder.Services.AddScoped<ProjectRepository>();
 builder.Services.AddScoped<ProjectMemberRepository>();
+builder.Services.AddScoped<InvitationRepository>();
 
 var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 builder.Services.AddAuthentication(options =>
@@ -124,8 +128,8 @@ builder.Services.AddSwaggerGen(options =>
             new List<string>()
         }
     });
-
-    options.OperationFilter<AddProjectIdHeaderOperationFilter>();
+    
+    options.EnableAnnotations();
 });
 
 Log.Logger = new LoggerConfiguration()
@@ -152,6 +156,8 @@ var app = builder.Build();
 app.UseExceptionHandling(
     new Dictionary<Type, HttpStatusCode>
     {
+        { typeof(ConflictException), HttpStatusCode.Conflict },
+        { typeof(NotFoundException), HttpStatusCode.NotFound },
     });
 
 if (app.Environment.IsDevelopment())

@@ -41,6 +41,13 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
     {
         return await dbSet.FindAsync([id], cancellationToken);
     }
+    
+    public virtual async Task<bool> ExistsAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken)
+    {
+        return await dbSet.AnyAsync(predicate, cancellationToken);
+    }
 
     public virtual async Task<TEntity> InsertAsync(TEntity entity, CancellationToken cancellationToken)
     {

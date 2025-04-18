@@ -1,6 +1,7 @@
 using AutoMapper;
 using Kabanosi.Dtos.Auth;
 using Kabanosi.Dtos.Project;
+using Kabanosi.Dtos.Invitation;
 using Kabanosi.Entities;
 
 namespace Kabanosi.Profiles;
@@ -13,9 +14,15 @@ public class MappingProfile : Profile
         CreateMap<RegisterRequestDto, User>();
         CreateMap<User, LoginResponseDto>()
             .ForMember(dest => dest.Token, opt => opt.Ignore());
-        
+
         // Project
         CreateMap<ProjectRequestDto, Project>();
         CreateMap<Project, ProjectResponseDto>();
+
+        // Invitation
+        CreateMap<Invitation, InvitationResponseDto>()
+            .ForMember(dest => dest.TargetEmail, opt => opt.MapFrom(src => src.User.Email))
+            .ForMember(dest => dest.Role, opt => opt.MapFrom(src => src.ProjectRole))
+            .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.InvitationStatus));
     }
 }
