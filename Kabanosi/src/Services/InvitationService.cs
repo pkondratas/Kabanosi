@@ -61,7 +61,7 @@ public class InvitationService : IInvitationService
     {
         var days = invitationDto.ValidDays ?? 7;
         if (days is < 1 or > 31)
-            throw new ValidationException("ValidDays must be between 1 and 31.");
+            throw new ValidationException("Valid Days must be between 1 and 31.");
 
         var targetUser = await _userManager.FindByEmailAsync(invitationDto.TargetEmail)
                          ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
@@ -98,5 +98,80 @@ public class InvitationService : IInvitationService
         // await _notificationService.SendInviteAsync(?);
 
         return _mapper.Map<InvitationResponseDto>(invite);
+    }
+
+    public async Task AcceptInviteAsync(Guid invitationId, CancellationToken cancellationToken)
+    {
+        var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                     ?? throw new UnauthorizedAccessException();
+
+        var invite = await _invitationRepo.FirstOrDefaultTrackedAsync(
+            i => i.Id == invitationId,
+            cancellationToken);
+
+        if (invite is null)
+            throw new NotFoundException("Invitation not found.");
+
+        if (invite.UserId != userId)
+            throw new UnauthorizedAccessException("You are not the recipient of this invite.");
+
+        if (invite.InvitationStatus != InvitationStatus.Pending || invite.ValidUntil < DateTime.UtcNow)
+            throw new ConflictException("This invitation is no longer valid.");
+
+        // Start transaction
+        await _unitOfWork.CreateTransactionAsync();
+        try
+        {
+            var newProjectMember = new ProjectMember
+            {
+                ProjectId = invite.ProjectId,
+                UserId = userId,
+                ProjectRole = invite.ProjectRole
+            };
+
+            await _projectMemberRepo.InsertAsync(newProjectMember, cancellationToken);
+            invite.InvitationStatus = InvitationStatus.Accepted;
+
+            await _unitOfWork.SaveAsync();
+            await _unitOfWork.CommitAsync();
+        }
+        catch
+        {
+            await _unitOfWork.RollbackAsync(); // rollback transaction if anything fails
+            throw;
+        }
+    }
+
+    public async Task DeclineInviteAsync(Guid invitationId, CancellationToken cancellationToken)
+    {
+        var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                     ?? throw new UnauthorizedAccessException();
+
+        var invite = await _invitationRepo.FirstOrDefaultTrackedAsync(i => i.Id == invitationId, cancellationToken);
+        if (invite is null)
+            throw new NotFoundException("Invitation not found.");
+
+        if (invite.UserId != userId)
+            throw new UnauthorizedAccessException("You are not the recipient of this invite.");
+
+        if (invite.InvitationStatus != InvitationStatus.Pending || invite.ValidUntil < DateTime.UtcNow)
+            throw new ConflictException("This invitation is no longer valid.");
+
+        invite.InvitationStatus = InvitationStatus.Declined;
+        await _unitOfWork.SaveAsync();
+    }
+
+    public async Task CancelInvitationAsync(Guid invitationId, CancellationToken cancellationToken)
+    {
+        var invite = await _invitationRepo.FirstOrDefaultTrackedAsync(i => i.Id == invitationId, cancellationToken);
+        
+        if (invite is null)
+            throw new NotFoundException("Invitation not found.");
+        
+        if (invite.InvitationStatus != InvitationStatus.Pending || invite.ValidUntil < DateTime.UtcNow)
+            throw new ConflictException("This invitation is no longer valid.");
+        
+        invite.InvitationStatus = InvitationStatus.Cancelled;
+        await _unitOfWork.SaveAsync();
     }
 }

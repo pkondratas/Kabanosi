@@ -37,7 +37,8 @@ public class InvitationController : ControllerBase
         [FromQuery] int pageNumber = 0,
         CancellationToken cancellationToken = default)
     {
-        var result = await _invitationService.GetProjectInvitesAsync(projectId, pageSize, pageNumber, cancellationToken);
+        var result =
+            await _invitationService.GetProjectInvitesAsync(projectId, pageSize, pageNumber, cancellationToken);
         return Ok(result);
     }
 
@@ -60,11 +61,35 @@ public class InvitationController : ControllerBase
         return Ok(result);
     }
 
-    // Accept invitation (User)
+    [HttpPut("accept/{invitationId:guid}")]
+    [Authorize]
+    public async Task<IActionResult> AcceptInvitationAsync([FromRoute] Guid invitationId,
+        CancellationToken ct = default)
+    {
+        await _invitationService.AcceptInviteAsync(invitationId, ct);
+        return NoContent();
+    }
 
-    // Decline invitation (User)
+    [HttpPut("decline/{invitationId:guid}")]
+    [Authorize]
+    public async Task<IActionResult> DeclineInvitationAsync([FromRoute] Guid invitationId,
+        CancellationToken ct = default)
+    {
+        await _invitationService.DeclineInviteAsync(invitationId, ct);
+        return NoContent();
+    }
 
-    // Cancel invitation (Project Admin)
+    [HttpPut("cancel/{invitationId:guid}")]
+    [Authorize(Policy = "ProjectMemberAndAdmin")]
+    public async Task<IActionResult> CancelInvitationAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid _,
+        [FromRoute] Guid invitationId,
+        CancellationToken ct = default)
+    {
+        await _invitationService.CancelInvitationAsync(invitationId, ct);
+        return NoContent();
+    }
 
-    // Expired invitation = hosted service (like a cron job)
+    // Expired invitation = hosted service (add later)
 }

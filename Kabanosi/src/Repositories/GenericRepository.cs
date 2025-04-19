@@ -48,11 +48,19 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
         params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = dbSet;
-
         query = ApplyIncludes(query, includes);
-
         return await query.AsNoTracking()
             .FirstOrDefaultAsync(predicate, cancellationToken);
+    }
+    
+    public async Task<TEntity?> FirstOrDefaultTrackedAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        CancellationToken ct = default,
+        params Expression<Func<TEntity, object>>[] includes)
+    {
+        IQueryable<TEntity> query = dbSet;
+        query = ApplyIncludes(query, includes);
+        return await query.FirstOrDefaultAsync(predicate, ct);
     }
     
     public virtual async Task<bool> ExistsAsync(
