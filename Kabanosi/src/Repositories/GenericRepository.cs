@@ -42,6 +42,19 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
         return await dbSet.FindAsync([id], cancellationToken);
     }
     
+    public virtual async Task<TEntity?> FirstOrDefaultAsync(
+        Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken = default,
+        params Expression<Func<TEntity, object>>[] includes)
+    {
+        IQueryable<TEntity> query = dbSet;
+
+        query = ApplyIncludes(query, includes);
+
+        return await query.AsNoTracking()
+            .FirstOrDefaultAsync(predicate, cancellationToken);
+    }
+    
     public virtual async Task<bool> ExistsAsync(
         Expression<Func<TEntity, bool>> predicate,
         CancellationToken cancellationToken)

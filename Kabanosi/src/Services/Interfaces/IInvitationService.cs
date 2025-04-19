@@ -4,6 +4,9 @@ namespace Kabanosi.Services.Interfaces;
 
 public interface IInvitationService
 {
-    Task<InvitationResponseDto> CreateInvitationAsync(Guid projectId, CreateInvitationDto invitationDto,
+    Task<InvitationResponseDto> CreateInviteAsync(Guid projectId, CreateInvitationDto invitationDto,
+        CancellationToken cancellationToken);
+
+    Task<IList<UserInvitesResponseDto>> GetUserInvitesAsync(int pageSize, int pageNumber,
         CancellationToken cancellationToken);
 }
