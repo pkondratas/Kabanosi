@@ -43,8 +43,17 @@ public class InvitationService : IInvitationService
 
         var userPendingInvites = await _invitationRepo.GetAllAsync(pageSize, pageNumber, cancellationToken,
             InvitationSpecifications.ForUserWithStatus(userId, InvitationStatus.Pending), includes: i => i.Project);
-        
+
         return _mapper.Map<IList<UserInvitesResponseDto>>(userPendingInvites);
+    }
+
+    public async Task<IList<InvitationResponseDto>> GetProjectInvitesAsync(Guid projectId, int pageSize, int pageNumber,
+        CancellationToken cancellationToken)
+    {
+        var invites = await _invitationRepo.GetAllAsync(pageSize, pageNumber, cancellationToken,
+            InvitationSpecifications.ForProject(projectId), includes: i => i.User);
+
+        return _mapper.Map<IList<InvitationResponseDto>>(invites);
     }
 
     public async Task<InvitationResponseDto> CreateInviteAsync(Guid projectId, CreateInvitationDto invitationDto,

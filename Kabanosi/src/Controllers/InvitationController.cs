@@ -7,7 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace Kabanosi.Controllers;
 
 [ApiController]
-[Route("api/v1")]
+[Route("api/v1/invitations")]
 public class InvitationController : ControllerBase
 {
     private readonly IInvitationService _invitationService;
@@ -17,7 +17,7 @@ public class InvitationController : ControllerBase
         _invitationService = invitationService;
     }
 
-    [HttpGet("invites")]
+    [HttpGet("user-invites")]
     [Authorize]
     public async Task<IActionResult> GetUserInvitesAsync(
         [FromQuery] int pageSize = 10,
@@ -28,7 +28,20 @@ public class InvitationController : ControllerBase
         return Ok(result);
     }
 
-    [HttpPost("invites")]
+    [HttpGet("project-invites")]
+    [Authorize(Policy = "ProjectMemberAndAdmin")]
+    public async Task<IActionResult> GetProjectInvitesAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid projectId,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] int pageNumber = 0,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _invitationService.GetProjectInvitesAsync(projectId, pageSize, pageNumber, cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost]
     [Authorize(Policy = "ProjectMemberAndAdmin")]
     public async Task<IActionResult> CreateInviteAsync(
         [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
@@ -54,8 +67,4 @@ public class InvitationController : ControllerBase
     // Cancel invitation (Project Admin)
 
     // Expired invitation = hosted service (like a cron job)
-
-    // GetUserInvitesAsync (User)
-
-    // GetProjectInvitesAsync (Project Admin)
 }

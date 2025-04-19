@@ -9,4 +9,7 @@ public interface IInvitationService
 
     Task<IList<UserInvitesResponseDto>> GetUserInvitesAsync(int pageSize, int pageNumber,
         CancellationToken cancellationToken);
+
+    Task<IList<InvitationResponseDto>> GetProjectInvitesAsync(Guid projectId, int pageSize, int pageNumber,
+        CancellationToken cancellationToken);
 }
