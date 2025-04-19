@@ -1,5 +1,6 @@
 using AutoMapper;
 using Kabanosi.Dtos.Auth;
+using Kabanosi.Dtos.Assignment;
 using Kabanosi.Dtos.Project;
 using Kabanosi.Entities;
 
@@ -17,5 +18,9 @@ public class MappingProfile : Profile
         // Project
         CreateMap<ProjectRequestDto, Project>();
         CreateMap<Project, ProjectResponseDto>();
+
+        // Assignment
+        CreateMap<AssignmentRequestDto, Assignment>();
+        CreateMap<Assignment, AssignmentResponseDto>();
     }
 }
