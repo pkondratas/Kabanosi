@@ -1,6 +1,7 @@
 using AutoMapper;
 using Kabanosi.Dtos.Auth;
 using Kabanosi.Dtos.Assignment;
+using Kabanosi.Dtos.AssignmentStatus;
 using Kabanosi.Dtos.Project;
 using Kabanosi.Dtos.Invitation;
 using Kabanosi.Entities;
@@ -35,5 +36,8 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InvitationId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.Name))
             .ForMember(dest => dest.RoleOffered, opt => opt.MapFrom(src => src.ProjectRole));
+        
+        // AssignmentStatus
+        CreateMap<AssignmentStatus, AssignmentStatusResponseDto>();
     }
 }
