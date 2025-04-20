@@ -11,8 +11,8 @@ namespace Kabanosi.Controllers;
 [Route("api/v1/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<User> _userManager;
     private readonly ITokenService _tokenService;
+    private readonly UserManager<User> _userManager;
     private readonly IMapper _mapper;
 
     public AuthController(UserManager<User> userManager, ITokenService tokenService, IMapper mapper)
