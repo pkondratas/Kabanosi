@@ -11,6 +11,7 @@ using Kabanosi.Specifications;
 namespace Kabanosi.Services;
 
 public class ProjectService(
+    IAssignmentStatusService assignmentStatusService,
     ProjectRepository projectRepository,
     ProjectMemberRepository projectMemberRepository,
     IUnitOfWork unitOfWork,
@@ -35,6 +36,7 @@ public class ProjectService(
             ProjectRole = ProjectRole.ProjectAdmin
         };
         await projectMemberRepository.InsertAsync(adminMember, cancellationToken);
+        await assignmentStatusService.CreateDefaultAssignmentStatusesAsync(project.Id, cancellationToken);
 
         await unitOfWork.SaveAsync();
 
