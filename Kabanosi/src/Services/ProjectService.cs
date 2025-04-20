@@ -6,6 +6,7 @@ using Kabanosi.Entities;
 using Kabanosi.Repositories;
 using Kabanosi.Repositories.UnitOfWork;
 using Kabanosi.Services.Interfaces;
+using Kabanosi.Specifications;
 
 namespace Kabanosi.Services;
 
@@ -17,19 +18,19 @@ public class ProjectService(
     IMapper mapper
 ) : IProjectService
 {
-    private readonly string _userId =
-        httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-
     public async Task<ProjectResponseDto> CreateProjectAsync(
         ProjectRequestDto projectDto,
         CancellationToken cancellationToken)
     {
+        var userId = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                     ?? throw new UnauthorizedAccessException();
+
         var project = mapper.Map<Project>(projectDto);
         project = await projectRepository.InsertAsync(project, cancellationToken);
 
         var adminMember = new ProjectMember
         {
-            UserId = _userId,
+            UserId = userId,
             ProjectId = project.Id,
             ProjectRole = ProjectRole.ProjectAdmin
         };
@@ -45,7 +46,11 @@ public class ProjectService(
         int pageNumber,
         CancellationToken cancellationToken)
     {
-        var projects = await projectRepository.GetAllAsync(pageSize, pageNumber, cancellationToken);
+        var userId = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
+                     ?? throw new UnauthorizedAccessException();
+
+        var projects = await projectRepository.GetAllAsync(pageSize, pageNumber, cancellationToken,
+            ProjectSpecifications.MemberBy(userId));
 
         return mapper.Map<IList<ProjectResponseDto>>(projects);
     }

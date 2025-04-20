@@ -29,7 +29,6 @@ public class ProjectController(IProjectService projectService) : ControllerBase
         [FromQuery] int pageNumber = 0,
         CancellationToken cancellationToken = default)
     {
-        // TODO: filter projects that user is a member of
         return Ok(await projectService.GetProjectsAsync(pageSize, pageNumber, cancellationToken));
     }
 }

@@ -25,7 +25,8 @@ namespace Kabanosi.Entities
         public Project Project { get; set; } = null!;
         public AssignmentStatus AssignmentStatus { get; set; } = null!;
         public AssignmentLabel? AssignmentLabel { get; set; }
-        public ICollection<ProjectMemberAssignment> ProjectParticipantAssignments { get; set; } = [];
+        
+        public ICollection<ProjectMemberAssignment> ProjectMemberAssignments { get; set; } = [];
         public ICollection<Comment> Comments { get; set; } = [];
     }
 }
