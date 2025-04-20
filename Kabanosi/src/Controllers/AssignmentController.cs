@@ -17,7 +17,7 @@ public class AssignmentController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "ProjectAdminOrMember")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
     public async Task<IActionResult> CreateAssignmentAsync(
         [FromBody] AssignmentRequestDto assignmentDto,
         CancellationToken cancellationToken = default)
@@ -30,7 +30,7 @@ public class AssignmentController : ControllerBase
     }
 
     [HttpGet("{id}")]
-    [Authorize(Policy = "ProjectAdminOrMember")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
     public async Task<IActionResult> GetAssignmentByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default)
@@ -43,7 +43,7 @@ public class AssignmentController : ControllerBase
     }
     
     [HttpGet]
-    [Authorize(Policy = "ProjectAdminOrMember")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
     public async Task<IActionResult> GetAssignmentsByProjectIdAsync(
         [FromQuery] int pageSize = 50,
         [FromQuery] int pageNumber = 0,
