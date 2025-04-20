@@ -57,6 +57,7 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
 
 builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
@@ -74,6 +75,7 @@ builder.Services.AddAuthorizationBuilder()
 // Repositories
 builder.Services.AddScoped<ProjectRepository>();
 builder.Services.AddScoped<ProjectMemberRepository>();
+builder.Services.AddScoped<AssignmentRepository>();
 builder.Services.AddScoped<InvitationRepository>();
 
 var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
