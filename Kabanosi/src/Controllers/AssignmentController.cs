@@ -2,6 +2,7 @@ using Kabanosi.Dtos.Assignment;
 using Kabanosi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Kabanosi.Controllers;
 
@@ -19,19 +20,26 @@ public class AssignmentController : ControllerBase
     [HttpPost]
     [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
     public async Task<IActionResult> CreateAssignmentAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid projectId,
         [FromBody] AssignmentRequestDto assignmentDto,
         CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var result = await _assignmentService.CreateAssignmentAsync(assignmentDto, cancellationToken);
+        var result = await _assignmentService.CreateAssignmentAsync(
+            projectId,
+            assignmentDto, 
+            cancellationToken);
         return Ok(result);
     }
 
     [HttpGet("{id}")]
     [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
     public async Task<IActionResult> GetAssignmentByIdAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid _,
         Guid id,
         CancellationToken cancellationToken = default)
     {
@@ -45,12 +53,46 @@ public class AssignmentController : ControllerBase
     [HttpGet]
     [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
     public async Task<IActionResult> GetAssignmentsByProjectIdAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid projectId,
         [FromQuery] int pageSize = 50,
         [FromQuery] int pageNumber = 0,
         CancellationToken cancellationToken = default)
     {
-        var assignments = await _assignmentService.GetAssignmentsByProjectIdAsync(pageSize, pageNumber, cancellationToken);
+        var assignments = await _assignmentService.GetAssignmentsByProjectIdAsync(
+            projectId,
+            pageSize, 
+            pageNumber, 
+            cancellationToken);
 
         return Ok(assignments);
+    }
+
+    [HttpPatch("{id}/change-status")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
+    public async Task<IActionResult> ChangeAssignmentStatusAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid _,
+        [FromRoute] Guid id,
+        ChangeAssignmentStatusRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _assignmentService.ChangeAssignmentStatusAsync(id, request, cancellationToken);
+
+        return Ok(response);
+    }
+
+    [HttpPatch("{id}/change-label")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
+    public async Task<IActionResult> ChangeAssignmentLabelAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid _,
+        [FromRoute] Guid id,
+        ChangeAssignmentLabelRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _assignmentService.ChangeAssignmentLabelAsync(id, request, cancellationToken);
+
+        return Ok(response);
     }
 } 

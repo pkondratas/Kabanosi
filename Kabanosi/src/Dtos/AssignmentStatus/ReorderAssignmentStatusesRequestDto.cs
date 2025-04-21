@@ -2,5 +2,5 @@
 
 public record ReorderAssignmentStatusesRequestDto
 {
-    public IList<Guid> IdsInOrder { get; set; }
+    public IList<Guid> IdsInOrder { get; init; }
 }

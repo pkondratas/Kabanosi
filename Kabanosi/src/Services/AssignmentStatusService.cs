@@ -110,7 +110,7 @@ public class AssignmentStatusService : IAssignmentStatusService
 
     public async Task<AssignmentStatusResponseDto> RenameAssignmentStatusAsync(
         Guid id, 
-        RenameAssignmentStatusRequestDto request,
+        AssignmentStatusRequestDto request,
         CancellationToken cancellationToken)
     {
         var assignmentStatus = await _assignmentStatusRepository
@@ -121,7 +121,7 @@ public class AssignmentStatusService : IAssignmentStatusService
             throw new NotFoundException($"Assignment status {id} not found.");
         }
         
-        assignmentStatus.Name = request.NewName;
+        assignmentStatus.Name = request.Name;
         await _unitOfWork.SaveAsync();
         
         return _mapper.Map<AssignmentStatusResponseDto>(assignmentStatus);

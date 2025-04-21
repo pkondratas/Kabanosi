@@ -24,7 +24,7 @@ public interface IAssignmentStatusService
     
     Task<AssignmentStatusResponseDto> RenameAssignmentStatusAsync(
         Guid id,
-        RenameAssignmentStatusRequestDto request,
+        AssignmentStatusRequestDto request,
         CancellationToken cancellationToken);
 
     Task DeleteAssignmentStatusAsync(Guid id, CancellationToken cancellationToken);

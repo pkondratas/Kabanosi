@@ -1,6 +1,7 @@
 using AutoMapper;
 using Kabanosi.Dtos.Auth;
 using Kabanosi.Dtos.Assignment;
+using Kabanosi.Dtos.AssignmentLabel;
 using Kabanosi.Dtos.AssignmentStatus;
 using Kabanosi.Dtos.Project;
 using Kabanosi.Dtos.Invitation;
@@ -39,5 +40,8 @@ public class MappingProfile : Profile
         
         // AssignmentStatus
         CreateMap<AssignmentStatus, AssignmentStatusResponseDto>();
+        
+        // AssignmentLabel
+        CreateMap<AssignmentLabel, AssignmentLabelResponseDto>();
     }
 }

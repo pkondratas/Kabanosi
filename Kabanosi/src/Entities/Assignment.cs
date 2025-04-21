@@ -10,7 +10,7 @@ namespace Kabanosi.Entities
         public Guid Id { get; set; }
 
         public Guid ProjectId { get; set; }
-        public int AssignmentLabelId { get; set; }
+        public int? AssignmentLabelId { get; set; }
         public Guid AssignmentStatusId { get; set; }
         public required string Name { get; set; }
         public required string Description { get; set; }
