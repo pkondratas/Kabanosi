@@ -60,6 +60,7 @@ builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
 builder.Services.AddScoped<IAssignmentStatusService, AssignmentStatusService>();
+builder.Services.AddScoped<IAssignmentLabelService, AssignmentLabelService>();
 
 builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
 
@@ -79,6 +80,7 @@ builder.Services.AddScoped<ProjectMemberRepository>();
 builder.Services.AddScoped<AssignmentRepository>();
 builder.Services.AddScoped<InvitationRepository>();
 builder.Services.AddScoped<AssignmentStatusRepository>();
+builder.Services.AddScoped<AssignmentLabelRepository>();
 
 var key = Encoding.UTF8.GetBytes(jwtSettings.Secret);
 builder.Services.AddAuthentication(options =>

@@ -56,7 +56,7 @@ public class AssignmentStatusController : ControllerBase
         [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
         Guid _,
         [FromRoute] Guid id,
-        RenameAssignmentStatusRequestDto request,
+        AssignmentStatusRequestDto request,
         CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)

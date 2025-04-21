@@ -14,4 +14,15 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     public virtual DbSet<Assignment> Assignments { get; set; }
     public virtual DbSet<AssignmentLabel> AssignmentLabels { get; set; }
     public virtual DbSet<AssignmentStatus> AssignmentStatuses { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Assignment>()
+            .HasOne(a => a.AssignmentLabel)
+            .WithMany(l => l.Assignments)
+            .HasForeignKey(a => a.AssignmentLabelId)
+            .OnDelete(DeleteBehavior.SetNull);
+    }
 }

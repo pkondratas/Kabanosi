@@ -4,7 +4,27 @@ namespace Kabanosi.Services.Interfaces;
 
 public interface IAssignmentService
 {
-    Task<AssignmentResponseDto> CreateAssignmentAsync(AssignmentRequestDto assignmentDto, CancellationToken cancellationToken);
-    Task<AssignmentResponseDto?> GetAssignmentByIdAsync(Guid id, CancellationToken cancellationToken);
-    Task<IList<AssignmentResponseDto>> GetAssignmentsByProjectIdAsync(int pageSize, int pageNumber, CancellationToken cancellationToken);
+    Task<AssignmentResponseDto> CreateAssignmentAsync(
+        Guid projectId,
+        AssignmentRequestDto assignmentDto, 
+        CancellationToken cancellationToken);
+    Task<AssignmentResponseDto?> GetAssignmentByIdAsync(
+        Guid id, 
+        CancellationToken cancellationToken);
+    
+    Task<IList<AssignmentResponseDto>> GetAssignmentsByProjectIdAsync(
+        Guid projectId,
+        int pageSize, 
+        int pageNumber, 
+        CancellationToken cancellationToken);
+    
+    Task<AssignmentResponseDto> ChangeAssignmentStatusAsync(
+        Guid id, 
+        ChangeAssignmentStatusRequestDto request, 
+        CancellationToken cancellationToken);
+    
+    Task<AssignmentResponseDto> ChangeAssignmentLabelAsync(
+        Guid id,
+        ChangeAssignmentLabelRequestDto request,
+        CancellationToken cancellationToken);
 } 

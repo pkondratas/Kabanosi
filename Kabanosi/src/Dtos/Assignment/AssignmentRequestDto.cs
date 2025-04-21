@@ -10,10 +10,7 @@ public record AssignmentRequestDto
     public string? Description { get; init; }
 
     [Required]
-    public required Guid ProjectId { get; init; }
-
-    [Required]
-    public required int AssignmentStatusId { get; init; }
+    public required Guid AssignmentStatusId { get; init; }
 
     public int? AssignmentLabelId { get; init; }
     public bool IsPlanned { get; init; } = false;

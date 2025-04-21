@@ -7,7 +7,7 @@ public record AssignmentResponseDto
     public string? Description { get; init; }
     public Guid ProjectId { get; init; }
     public int? AssignmentLabelId { get; init; }
-    public int AssignmentStatusId { get; init; }
+    public Guid AssignmentStatusId { get; init; }
     public bool IsPlanned { get; init; }
     public int? Estimation { get; init; }
     public DateOnly? Deadline { get; init; }
