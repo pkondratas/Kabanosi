@@ -10,15 +10,16 @@ namespace Kabanosi.Repositories;
 public abstract class GenericRepository<TEntity>(DatabaseContext context)
     where TEntity : class
 {
-    internal DatabaseContext context = context;
-    internal DbSet<TEntity> dbSet = context.Set<TEntity>();
+    protected DatabaseContext context = context;
+    protected DbSet<TEntity> dbSet = context.Set<TEntity>();
 
     public virtual async Task<IEnumerable<TEntity>> GetAllAsync(
-        int pageSize,
-        int pageNumber,
-        CancellationToken cancellationToken,
+        int? pageSize = default,
+        int? pageNumber = default,
+        CancellationToken cancellationToken = default,
         Expression<Func<TEntity, bool>>? filter = null,
         Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+        bool asTracking = false,
         params Expression<Func<TEntity, object>>[] includes)
     {
         IQueryable<TEntity> query = dbSet;
@@ -28,13 +29,16 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
 
         if (orderBy is not null)
             orderBy(query);
-
+        
         query = ApplyIncludes(query, includes);
 
-        return await query
-            .AsNoTracking()
-            .Skip(pageSize * pageNumber)
-            .ToListAsync(cancellationToken);
+        if (!asTracking)
+            query = query.AsNoTracking();
+        
+        if (pageSize.HasValue && pageNumber.HasValue)
+            query = query.Skip(pageSize.Value * pageNumber.Value);
+        
+        return await query.ToListAsync(cancellationToken);
     }
 
     public virtual async Task<TEntity?> GetByIdAsync(object id, CancellationToken cancellationToken)
@@ -75,6 +79,11 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
         return (await dbSet
                 .AddAsync(entity, cancellationToken))
             .Entity;
+    }
+    
+    public virtual async Task InsertRangeAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken)
+    {
+        await dbSet.AddRangeAsync(entities, cancellationToken);
     }
 
     public virtual async Task DeleteAsync(object id, CancellationToken cancellationToken)

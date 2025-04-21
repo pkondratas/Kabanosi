@@ -7,13 +7,14 @@ namespace Kabanosi.Entities
     public class AssignmentStatus
     {
         [Key]
-        public int Id { get; set; }
+        public Guid Id { get; set; }
 
         public Guid ProjectId { get; set; }
         public required string Name { get; set; }
+        public required int Order { get; set; }
 
         [Timestamp]
-        public required byte[] Version { get; set; }
+        public byte[] Version { get; set; }
 
         public Project Project { get; set; } = null!;
         public ICollection<Assignment> Assignments { get; set; } = [];
