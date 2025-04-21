@@ -126,4 +126,10 @@ public class AssignmentStatusService : IAssignmentStatusService
         
         return _mapper.Map<AssignmentStatusResponseDto>(assignmentStatus);
     }
+
+    public async Task DeleteAssignmentStatusAsync(Guid id, CancellationToken cancellationToken)
+    {
+        await _assignmentStatusRepository.DeleteAsync(id, cancellationToken);
+        await _unitOfWork.SaveAsync();
+    }
 }
