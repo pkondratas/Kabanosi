@@ -1,4 +1,5 @@
 using System.Net;
+using System.Security.Claims;
 using System.Text;
 using Autofac;
 using Autofac.Extensions.DependencyInjection;
@@ -8,6 +9,7 @@ using Kabanosi.Constants;
 using Kabanosi.Extensions;
 using Kabanosi.Entities;
 using Kabanosi.Exceptions;
+using Kabanosi.Hubs;
 using Kabanosi.Interceptors;
 using Kabanosi.Persistence;
 using Kabanosi.Profiles;
@@ -62,9 +64,11 @@ builder.Services.AddScoped<IInvitationService, InvitationService>();
 builder.Services.AddScoped<IAssignmentStatusService, AssignmentStatusService>();
 builder.Services.AddScoped<IAssignmentLabelService, AssignmentLabelService>();
 
-builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
+builder.Services.AddSignalR();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
-// Custom policy-based authorization (project scoped auth)
+// Custom policy-based authorization service (project scoped auth)
+builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("ProjectMemberAndAdmin", policy =>
         policy.Requirements.Add(new ProjectRoleRequirement([nameof(ProjectRole.ProjectAdmin)])))
@@ -180,5 +184,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<NotificationHub>("/hubs/notify");
 
 app.Run();

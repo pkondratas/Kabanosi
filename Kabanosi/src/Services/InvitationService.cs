@@ -14,18 +14,23 @@ namespace Kabanosi.Services;
 
 public class InvitationService : IInvitationService
 {
+    private readonly INotificationService _notificationService;
     private readonly InvitationRepository _invitationRepo;
     private readonly ProjectMemberRepository _projectMemberRepo;
+    private readonly ProjectRepository _projectRepo;
     private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IMapper _mapper;
 
-    public InvitationService(InvitationRepository invitationRepo, ProjectMemberRepository projectMemberRepo,
+    public InvitationService(INotificationService notificationService, InvitationRepository invitationRepo,
+        ProjectMemberRepository projectMemberRepo, ProjectRepository projectRepo,
         UserManager<User> userManager, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IMapper mapper)
     {
+        _notificationService = notificationService;
         _invitationRepo = invitationRepo;
         _projectMemberRepo = projectMemberRepo;
+        _projectRepo = projectRepo;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
         _httpContextAccessor = httpContextAccessor;
@@ -106,9 +111,18 @@ public class InvitationService : IInvitationService
 
         await _invitationRepo.InsertAsync(invite, cancellationToken);
         await _unitOfWork.SaveAsync();
-
-        // TODO - later add notificationService to send live invite to intended user here
-        // await _notificationService.SendInviteAsync(?);
+        
+        // Push live invitation to the invited user's client via SignalR
+        var projectName = await _projectRepo.GetProjectNameAsync(invite.ProjectId, cancellationToken);
+        var newLiveInviteDto = new UserInvitesResponseDto
+        {
+            InvitationId = invite.Id,
+            ProjectId = invite.ProjectId,
+            ProjectName = projectName,
+            RoleOffered = invite.ProjectRole,
+            ValidUntil = invite.ValidUntil
+        };
+        await _notificationService.InviteReceivedAsync(targetUser.Id, newLiveInviteDto);
 
         return _mapper.Map<InvitationResponseDto>(invite);
     }
