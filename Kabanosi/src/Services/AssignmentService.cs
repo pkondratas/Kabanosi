@@ -94,4 +94,35 @@ public class AssignmentService : IAssignmentService
         
         return _mapper.Map<AssignmentResponseDto>(assignment);
     }
+
+    public async Task<AssignmentResponseDto> UpdateAssignmentAsync(
+    Guid id,
+    AssignmentUpdateRequestDto request,
+    CancellationToken cancellationToken)
+    {
+        var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
+
+        if (assignment == null)
+            throw new NotFoundException($"Assignment {id} not found.");
+
+        if (request.Name is not null)
+            assignment.Name = request.Name;
+
+        if (request.Description is not null)
+            assignment.Description = request.Description;
+
+        if (request.Estimation.HasValue)
+            assignment.Estimation = request.Estimation.Value;
+
+        if (request.Deadline.HasValue)
+            assignment.Deadline = request.Deadline.Value;
+
+        if (request.IsPlanned.HasValue)
+            assignment.IsPlanned = request.IsPlanned.Value;
+
+        await _unitOfWork.SaveAsync();
+
+        return _mapper.Map<AssignmentResponseDto>(assignment);
+    }
+
 } 
