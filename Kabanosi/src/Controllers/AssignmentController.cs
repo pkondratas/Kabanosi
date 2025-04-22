@@ -95,4 +95,16 @@ public class AssignmentController : ControllerBase
 
         return Ok(response);
     }
-} 
+
+    [HttpDelete("{id}")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
+    public async Task<IActionResult> DeleteAssignmentAsync(
+    [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+    Guid _,
+    [FromRoute] Guid id,
+    CancellationToken cancellationToken = default)
+    {
+        await _assignmentService.DeleteAssignmentAsync(id, cancellationToken);
+        return NoContent();
+    }
+}

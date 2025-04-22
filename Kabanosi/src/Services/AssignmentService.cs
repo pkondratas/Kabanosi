@@ -78,13 +78,13 @@ public class AssignmentService : IAssignmentService
         return _mapper.Map<AssignmentResponseDto>(assignment);
     }
 
-     public async Task<AssignmentResponseDto> ChangeAssignmentLabelAsync(
+    public async Task<AssignmentResponseDto> ChangeAssignmentLabelAsync(
         Guid id, 
         ChangeAssignmentLabelRequestDto request, 
         CancellationToken cancellationToken)
     {
         var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
-
+        
         if (assignment == null)
             throw new NotFoundException($"Assignment {id} not found.");
         
@@ -94,4 +94,16 @@ public class AssignmentService : IAssignmentService
         
         return _mapper.Map<AssignmentResponseDto>(assignment);
     }
-} 
+
+    public async Task DeleteAssignmentAsync(Guid id, CancellationToken cancellationToken)
+    {
+        var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
+    
+        if (assignment == null)
+            throw new NotFoundException($"Assignment {id} not found.");
+    
+        _assignmentRepository.Delete(assignment);
+    
+        await _unitOfWork.SaveAsync();
+    }
+}
