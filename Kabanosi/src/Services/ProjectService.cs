@@ -6,7 +6,6 @@ using Kabanosi.Entities;
 using Kabanosi.Repositories;
 using Kabanosi.Repositories.UnitOfWork;
 using Kabanosi.Services.Interfaces;
-using Kabanosi.Specifications;
 
 namespace Kabanosi.Services;
 
@@ -52,7 +51,7 @@ public class ProjectService(
                      ?? throw new UnauthorizedAccessException();
 
         var projects = await projectRepository.GetAllAsync(pageSize, pageNumber, cancellationToken,
-            ProjectSpecifications.MemberBy(userId));
+            p => p.ProjectMembers.Any(pm => pm.UserId == userId));
 
         return mapper.Map<IList<ProjectResponseDto>>(projects);
     }
