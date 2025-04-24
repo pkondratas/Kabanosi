@@ -43,7 +43,7 @@ public class AssignmentService : IAssignmentService
         CancellationToken cancellationToken)
     {
         var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
-        return assignment == null ? null : _mapper.Map<AssignmentResponseDto>(assignment);
+        return _mapper.Map<AssignmentResponseDto>(assignment);
     }
 
     public async Task<IList<AssignmentResponseDto>> GetAssignmentsByProjectIdAsync(
@@ -68,9 +68,6 @@ public class AssignmentService : IAssignmentService
     {
         var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
 
-        if (assignment == null)
-            throw new NotFoundException($"Assignment {id} not found.");
-
         assignment.AssignmentStatusId = request.NewAssignmentStatusId;
         
         await _unitOfWork.SaveAsync();
@@ -84,9 +81,6 @@ public class AssignmentService : IAssignmentService
         CancellationToken cancellationToken)
     {
         var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
-
-        if (assignment == null)
-            throw new NotFoundException($"Assignment {id} not found.");
         
         assignment.AssignmentLabelId = request.NewAssignmentLabelId;
         

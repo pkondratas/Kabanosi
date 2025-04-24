@@ -41,9 +41,9 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
         return await query.ToListAsync(cancellationToken);
     }
 
-    public virtual async Task<TEntity?> GetByIdAsync(object id, CancellationToken cancellationToken)
+    public virtual async Task<TEntity> GetByIdAsync(object id, CancellationToken cancellationToken)
     {
-        return await dbSet.FindAsync([id], cancellationToken);
+        return await dbSet.FindAsync([id], cancellationToken) ?? throw new NotFoundException($"{ErrorMessages.ENTITY_NOT_FOUND} Id: {id}");
     }
     
     public virtual async Task<TEntity?> FirstOrDefaultAsync(
