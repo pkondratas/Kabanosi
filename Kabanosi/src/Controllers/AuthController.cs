@@ -52,7 +52,6 @@ public class AuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            // Add logging later
             return StatusCode(500, new
             {
                 Message = "An unexpected error occurred while registering the user."

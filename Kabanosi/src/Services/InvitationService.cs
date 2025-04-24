@@ -8,25 +8,29 @@ using Kabanosi.Exceptions;
 using Kabanosi.Repositories;
 using Kabanosi.Repositories.UnitOfWork;
 using Kabanosi.Services.Interfaces;
-using Kabanosi.Specifications;
 using Microsoft.AspNetCore.Identity;
 
 namespace Kabanosi.Services;
 
 public class InvitationService : IInvitationService
 {
+    private readonly INotificationService _notificationService;
     private readonly InvitationRepository _invitationRepo;
     private readonly ProjectMemberRepository _projectMemberRepo;
+    private readonly ProjectRepository _projectRepo;
     private readonly UserManager<User> _userManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IMapper _mapper;
 
-    public InvitationService(InvitationRepository invitationRepo, ProjectMemberRepository projectMemberRepo,
+    public InvitationService(INotificationService notificationService, InvitationRepository invitationRepo,
+        ProjectMemberRepository projectMemberRepo, ProjectRepository projectRepo,
         UserManager<User> userManager, IUnitOfWork unitOfWork, IHttpContextAccessor httpContextAccessor, IMapper mapper)
     {
+        _notificationService = notificationService;
         _invitationRepo = invitationRepo;
         _projectMemberRepo = projectMemberRepo;
+        _projectRepo = projectRepo;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
         _httpContextAccessor = httpContextAccessor;
@@ -41,19 +45,25 @@ public class InvitationService : IInvitationService
         var userId = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
                      ?? throw new UnauthorizedAccessException();
 
-        var userPendingInvites = await _invitationRepo.GetAllAsync(pageSize, pageNumber, cancellationToken,
-            InvitationSpecifications.ForUserWithStatus(userId, InvitationStatus.Pending), includes: i => i.Project);
+        var userValidPendingInvites = await _invitationRepo.GetAllAsync(
+            pageSize, pageNumber, cancellationToken,
+            i => i.UserId == userId &&
+                 i.InvitationStatus == InvitationStatus.Pending &&
+                 i.ValidUntil >= DateTime.UtcNow,
+            includes: i => i.Project);
 
-        return _mapper.Map<IList<UserInvitesResponseDto>>(userPendingInvites);
+        return _mapper.Map<IList<UserInvitesResponseDto>>(userValidPendingInvites);
     }
 
     public async Task<IList<InvitationResponseDto>> GetProjectInvitesAsync(Guid projectId, int pageSize, int pageNumber,
         CancellationToken cancellationToken)
     {
-        var invites = await _invitationRepo.GetAllAsync(pageSize, pageNumber, cancellationToken,
-            InvitationSpecifications.ForProject(projectId), includes: i => i.User);
+        var allInvites = await _invitationRepo.GetAllAsync(
+            pageSize, pageNumber, cancellationToken,
+            i => i.ProjectId == projectId,
+            includes: i => i.User);
 
-        return _mapper.Map<IList<InvitationResponseDto>>(invites);
+        return _mapper.Map<IList<InvitationResponseDto>>(allInvites);
     }
 
     public async Task<InvitationResponseDto> CreateInviteAsync(Guid projectId, CreateInvitationDto invitationDto,
@@ -64,23 +74,31 @@ public class InvitationService : IInvitationService
             throw new ValidationException("Valid Days must be between 1 and 31.");
 
         var targetUser = await _userManager.FindByEmailAsync(invitationDto.TargetEmail)
-                         ?? throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
+                         ?? throw new NotFoundException($"User {invitationDto.TargetEmail} was not found.");
 
         var alreadyMember = await _projectMemberRepo.ExistsAsync(
             pm => pm.ProjectId == projectId && pm.UserId == targetUser.Id, cancellationToken);
         if (alreadyMember)
-            throw new ConflictException(ErrorMessages.USER_ALREADY_PROJECT_MEMBER);
+            throw new ConflictException($"User {targetUser.Email} is already a project member");
 
-        var existingInvite = await _invitationRepo
-            .FirstOrDefaultAsync(
-                i => i.ProjectId == projectId &&
-                     i.UserId == targetUser.Id &&
-                     i.InvitationStatus == InvitationStatus.Pending &&
-                     i.ValidUntil > DateTime.UtcNow,
-                cancellationToken);
+        var existingInvite = await _invitationRepo.FirstOrDefaultTrackedAsync(
+            i => i.ProjectId == projectId &&
+                 i.UserId == targetUser.Id &&
+                 i.InvitationStatus == InvitationStatus.Pending,
+            cancellationToken);
 
         if (existingInvite is not null)
-            throw new ConflictException("Invitation for this user already exists.");
+        {
+            if (existingInvite.ValidUntil < DateTime.UtcNow)
+            {
+                await _invitationRepo.DeleteAsync(existingInvite, cancellationToken);
+                await _unitOfWork.SaveAsync();
+            }
+            else
+            {
+                throw new ConflictException("An active invitation for this user already exists.");
+            }
+        }
 
         var invite = new Invitation
         {
@@ -93,9 +111,18 @@ public class InvitationService : IInvitationService
 
         await _invitationRepo.InsertAsync(invite, cancellationToken);
         await _unitOfWork.SaveAsync();
-
-        // TODO - later add notificationService to send live invite to intended user here
-        // await _notificationService.SendInviteAsync(?);
+        
+        // Push live invitation to the invited user's client via SignalR
+        var projectName = await _projectRepo.GetProjectNameAsync(invite.ProjectId, cancellationToken);
+        var newLiveInviteDto = new UserInvitesResponseDto
+        {
+            InvitationId = invite.Id,
+            ProjectId = invite.ProjectId,
+            ProjectName = projectName,
+            RoleOffered = invite.ProjectRole,
+            ValidUntil = invite.ValidUntil
+        };
+        await _notificationService.InviteReceivedAsync(targetUser.Id, newLiveInviteDto);
 
         return _mapper.Map<InvitationResponseDto>(invite);
     }
@@ -115,31 +142,22 @@ public class InvitationService : IInvitationService
         if (invite.UserId != userId)
             throw new UnauthorizedAccessException("You are not the recipient of this invite.");
 
-        if (invite.InvitationStatus != InvitationStatus.Pending || invite.ValidUntil < DateTime.UtcNow)
+        await CheckAndDeleteIfExpired(invite, cancellationToken);
+
+        if (invite.InvitationStatus != InvitationStatus.Pending)
             throw new ConflictException("This invitation is no longer valid.");
 
-        // Start transaction
-        await _unitOfWork.CreateTransactionAsync();
-        try
+        var newProjectMember = new ProjectMember
         {
-            var newProjectMember = new ProjectMember
-            {
-                ProjectId = invite.ProjectId,
-                UserId = userId,
-                ProjectRole = invite.ProjectRole
-            };
+            ProjectId = invite.ProjectId,
+            UserId = userId,
+            ProjectRole = invite.ProjectRole
+        };
 
-            await _projectMemberRepo.InsertAsync(newProjectMember, cancellationToken);
-            invite.InvitationStatus = InvitationStatus.Accepted;
+        await _projectMemberRepo.InsertAsync(newProjectMember, cancellationToken);
+        invite.InvitationStatus = InvitationStatus.Accepted;
 
-            await _unitOfWork.SaveAsync();
-            await _unitOfWork.CommitAsync();
-        }
-        catch
-        {
-            await _unitOfWork.RollbackAsync(); // rollback transaction if anything fails
-            throw;
-        }
+        await _unitOfWork.SaveAsync();
     }
 
     public async Task DeclineInviteAsync(Guid invitationId, CancellationToken cancellationToken)
@@ -154,7 +172,9 @@ public class InvitationService : IInvitationService
         if (invite.UserId != userId)
             throw new UnauthorizedAccessException("You are not the recipient of this invite.");
 
-        if (invite.InvitationStatus != InvitationStatus.Pending || invite.ValidUntil < DateTime.UtcNow)
+        await CheckAndDeleteIfExpired(invite, cancellationToken);
+
+        if (invite.InvitationStatus != InvitationStatus.Pending)
             throw new ConflictException("This invitation is no longer valid.");
 
         invite.InvitationStatus = InvitationStatus.Declined;
@@ -164,14 +184,26 @@ public class InvitationService : IInvitationService
     public async Task CancelInvitationAsync(Guid invitationId, CancellationToken cancellationToken)
     {
         var invite = await _invitationRepo.FirstOrDefaultTrackedAsync(i => i.Id == invitationId, cancellationToken);
-        
+
         if (invite is null)
             throw new NotFoundException("Invitation not found.");
-        
-        if (invite.InvitationStatus != InvitationStatus.Pending || invite.ValidUntil < DateTime.UtcNow)
+
+        await CheckAndDeleteIfExpired(invite, cancellationToken);
+
+        if (invite.InvitationStatus != InvitationStatus.Pending)
             throw new ConflictException("This invitation is no longer valid.");
-        
+
         invite.InvitationStatus = InvitationStatus.Cancelled;
         await _unitOfWork.SaveAsync();
+    }
+
+    private async Task CheckAndDeleteIfExpired(Invitation invite, CancellationToken cancellationToken)
+    {
+        if (invite.ValidUntil < DateTime.UtcNow)
+        {
+            await _invitationRepo.DeleteAsync(invite, cancellationToken);
+            await _unitOfWork.SaveAsync();
+            throw new ConflictException("This invitation has expired.");
+        }
     }
 }

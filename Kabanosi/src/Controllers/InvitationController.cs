@@ -90,6 +90,4 @@ public class InvitationController : ControllerBase
         await _invitationService.CancelInvitationAsync(invitationId, ct);
         return NoContent();
     }
-
-    // Expired invitation = hosted service (add later)
 }
