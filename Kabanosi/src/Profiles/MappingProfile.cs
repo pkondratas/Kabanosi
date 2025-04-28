@@ -6,6 +6,7 @@ using Kabanosi.Dtos.AssignmentStatus;
 using Kabanosi.Dtos.Project;
 using Kabanosi.Dtos.Invitation;
 using Kabanosi.Entities;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace Kabanosi.Profiles;
 
@@ -21,6 +22,7 @@ public class MappingProfile : Profile
         // Project
         CreateMap<ProjectRequestDto, Project>();
         CreateMap<Project, ProjectResponseDto>();
+        CreateMap<Project, ProjectRequestDto>();
 
         // Assignment
         CreateMap<AssignmentRequestDto, Assignment>();
