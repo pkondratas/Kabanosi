@@ -46,6 +46,7 @@ public class MappingProfile : Profile
         CreateMap<AssignmentLabel, AssignmentLabelResponseDto>();
         
         // ProjectMember
+        CreateMap<ProjectMemberUpdateRequestDto, ProjectMember>();
         CreateMap<ProjectMember, ProjectMemberResponseDto>();
     }
 }

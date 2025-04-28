@@ -1,5 +1,6 @@
 using AutoMapper;
 using Kabanosi.Dtos.ProjectMember;
+using Kabanosi.Exceptions;
 using Kabanosi.Repositories;
 using Kabanosi.Repositories.UnitOfWork;
 using Kabanosi.Services.Interfaces;
@@ -38,11 +39,28 @@ public class ProjectMemberService : IProjectMemberService
     }
 
     public async Task DeleteProjectMemberAsync(
-        Guid projectMemberId,
+        Guid id,
         CancellationToken cancellationToken)
     {
-        await _projectMemberRepository.DeleteAsync(projectMemberId, cancellationToken);
+        await _projectMemberRepository.DeleteAsync(id, cancellationToken);
 
         await _unitOfWork.SaveAsync();
+    }
+
+    public async Task<ProjectMemberResponseDto> UpdateProjectMemberAsync(
+        Guid id,
+        ProjectMemberUpdateRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        var member = await _projectMemberRepository.GetByIdAsync(id, cancellationToken);
+
+        if (member == null)
+            throw new NotFoundException($"Project member {id} not found");
+
+        member.ProjectRole = request.ProjectRole;
+        
+        await _unitOfWork.SaveAsync();
+        
+        return _mapper.Map<ProjectMemberResponseDto>(member);
     }
 }

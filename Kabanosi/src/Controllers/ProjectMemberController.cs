@@ -1,3 +1,4 @@
+using Kabanosi.Dtos.ProjectMember;
 using Kabanosi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,7 +34,7 @@ public class ProjectMemberController : ControllerBase
         
         return Ok(response);
     }
-
+    
     [HttpDelete("{id}")]
     [Authorize(Policy = "ProjectMemberAndAdmin")]
     public async Task<IActionResult> DeleteProjectMemberAsync(
@@ -45,5 +46,18 @@ public class ProjectMemberController : ControllerBase
         await _projectMemberService.DeleteProjectMemberAsync(id, cancellationToken);
         
         return Ok();
+    }
+    
+    [HttpPatch("{id}")]
+    [Authorize(Policy = "ProjectMemberAndAdmin")]
+    public async Task<IActionResult> UpdateProjectMemberAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid projectId,
+        [FromRoute] Guid id,
+        [FromBody] ProjectMemberUpdateRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _projectMemberService.UpdateProjectMemberAsync(id, request, cancellationToken);
+        return Ok(result);
     }
 }
