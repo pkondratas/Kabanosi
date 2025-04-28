@@ -36,4 +36,13 @@ public class ProjectMemberService : IProjectMemberService
         
         return _mapper.Map<List<ProjectMemberResponseDto>>(members);
     }
+
+    public async Task DeleteProjectMemberAsync(
+        Guid projectMemberId,
+        CancellationToken cancellationToken)
+    {
+        await _projectMemberRepository.DeleteAsync(projectMemberId, cancellationToken);
+
+        await _unitOfWork.SaveAsync();
+    }
 }

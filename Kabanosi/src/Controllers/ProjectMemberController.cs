@@ -33,4 +33,17 @@ public class ProjectMemberController : ControllerBase
         
         return Ok(response);
     }
+
+    [HttpDelete("{id}")]
+    [Authorize(Policy = "ProjectMemberAndAdmin")]
+    public async Task<IActionResult> DeleteProjectMemberAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid projectId,
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        await _projectMemberService.DeleteProjectMemberAsync(id, cancellationToken);
+        
+        return Ok();
+    }
 }

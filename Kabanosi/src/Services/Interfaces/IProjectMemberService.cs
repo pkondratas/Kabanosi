@@ -9,4 +9,5 @@ public interface IProjectMemberService
         int pageSize,
         int pageNumber,
         CancellationToken cancellationToken);
+    Task DeleteProjectMemberAsync(Guid projectMemberId, CancellationToken cancellationToken);
 }
