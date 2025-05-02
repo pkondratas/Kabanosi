@@ -7,12 +7,12 @@ export function middleware(request: NextRequest) {
         request.nextUrl.pathname.startsWith('/signup')
 
     // If trying to access auth pages while logged in, redirect to home
-    if (isAuthPage && token) {
+    if (isAuthPage && token?.value) {
         return NextResponse.redirect(new URL('/', request.url))
     }
 
     // If trying to access protected routes without being logged in
-    if (!isAuthPage && !token) {
+    if (!isAuthPage && (!token || !token.value)) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 

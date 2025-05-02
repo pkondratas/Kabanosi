@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,16 +13,16 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { login } from "@/lib/actions/auth.actions";
 import { useState } from "react";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [error, setError] = useState<string>();
-  const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
-    setIsLoading(true);
     setError(undefined);
 
     try {
@@ -32,9 +31,9 @@ export function LoginForm({
         password: formData.get("password") as string,
       });
     } catch (err) {
-      setError("Invalid email or password");
-    } finally {
-      setIsLoading(false);
+      setError(
+        err instanceof Error ? err.message : "Invalid email or password"
+      );
     }
   }
 
@@ -66,11 +65,15 @@ export function LoginForm({
                 </div>
                 <Input id="password" name="password" type="password" required />
               </div>
-              {error && <div className="text-sm text-red-500">{error}</div>}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Logging in..." : "Login"}
-                </Button>
+                <SubmitButton pendingText="Logging in..." className="w-full">
+                  Login
+                </SubmitButton>
               </div>
             </div>
             <div className="mt-4 text-center text-sm">

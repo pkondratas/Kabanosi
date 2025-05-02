@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -14,16 +13,16 @@ import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { register } from "@/lib/actions/auth.actions";
 import { useState } from "react";
+import { SubmitButton } from "@/components/ui/submit-button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const [error, setError] = useState<string>();
-  const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(formData: FormData) {
-    setIsLoading(true);
     setError(undefined);
 
     const password = formData.get("password") as string;
@@ -31,7 +30,6 @@ export function SignupForm({
 
     if (password !== confirmPassword) {
       setError("Passwords do not match");
-      setIsLoading(false);
       return;
     }
 
@@ -43,9 +41,11 @@ export function SignupForm({
         confirmPassword,
       });
     } catch (err) {
-      setError("Registration failed. Please try again.");
-    } finally {
-      setIsLoading(false);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Registration failed. Please try again."
+      );
     }
   }
 
@@ -94,11 +94,18 @@ export function SignupForm({
                   required
                 />
               </div>
-              {error && <div className="text-sm text-red-500">{error}</div>}
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
               <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Creating account..." : "Create account"}
-                </Button>
+                <SubmitButton
+                  pendingText="Creating account..."
+                  className="w-full"
+                >
+                  Create account
+                </SubmitButton>
               </div>
             </div>
             <div className="mt-4 text-center text-sm">
