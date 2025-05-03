@@ -27,6 +27,10 @@ public interface IAssignmentService
         Guid id,
         ChangeAssignmentLabelRequestDto request,
         CancellationToken cancellationToken);
+
+    Task DeleteAssignmentAsync(
+        Guid id,
+        CancellationToken cancellationToken);
         
     Task<AssignmentResponseDto> UpdateAssignmentAsync(
         Guid id,
