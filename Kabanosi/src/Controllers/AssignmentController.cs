@@ -95,4 +95,17 @@ public class AssignmentController : ControllerBase
 
         return Ok(response);
     }
+
+    [HttpPatch("{id}")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
+    public async Task<IActionResult> UpdateAssignmentAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid _,
+        [FromRoute] Guid id,
+        [FromBody] AssignmentUpdateRequestDto request,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _assignmentService.UpdateAssignmentAsync(id, request, cancellationToken);
+        return Ok(result);
+    }
 } 

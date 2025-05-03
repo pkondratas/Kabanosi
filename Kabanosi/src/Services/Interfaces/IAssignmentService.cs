@@ -27,4 +27,9 @@ public interface IAssignmentService
         Guid id,
         ChangeAssignmentLabelRequestDto request,
         CancellationToken cancellationToken);
+        
+    Task<AssignmentResponseDto> UpdateAssignmentAsync(
+        Guid id,
+        AssignmentUpdateRequestDto request,
+        CancellationToken cancellationToken);
 } 
