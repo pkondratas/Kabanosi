@@ -6,7 +6,6 @@ using Kabanosi.Entities;
 using Kabanosi.Repositories;
 using Kabanosi.Repositories.UnitOfWork;
 using Kabanosi.Services.Interfaces;
-using Kabanosi.Specifications;
 using Microsoft.AspNetCore.JsonPatch;
 
 namespace Kabanosi.Services;
@@ -58,12 +57,8 @@ public class ProjectService(
         var userId = httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
                      ?? throw new UnauthorizedAccessException();
 
-        var projects = await projectRepository.GetAllAsync(
-            pageSize,
-            pageNumber,
-            cancellationToken,
-            filter: ProjectSpecifications.MemberBy(userId)
-        );
+        var projects = await projectRepository.GetAllAsync(pageSize, pageNumber, cancellationToken,
+            p => p.ProjectMembers.Any(pm => pm.UserId == userId));
 
         return mapper.Map<IList<ProjectResponseDto>>(projects);
     }
