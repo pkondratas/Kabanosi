@@ -65,6 +65,7 @@ builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IInvitationService, InvitationService>();
 builder.Services.AddScoped<IAssignmentStatusService, AssignmentStatusService>();
 builder.Services.AddScoped<IAssignmentLabelService, AssignmentLabelService>();
+builder.Services.AddScoped<IProjectMemberService, ProjectMemberService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();
