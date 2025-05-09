@@ -1,3 +1,5 @@
+import { LoggedInNavbar } from "@/components/features/protected/shared/loggedInNavbar";
+
 export default function ProtectedLayout({
   children,
 }: {
@@ -5,8 +7,8 @@ export default function ProtectedLayout({
 }) {
   return (
     <>
-      <header className="fixed top-0 w-full">
-        Protected header with projects, notifications, username, logout button
+      <header className="fixed top-0 w-full z-50">
+        <LoggedInNavbar />
       </header>
       <main>{children}</main>
     </>
