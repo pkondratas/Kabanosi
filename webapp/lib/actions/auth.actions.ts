@@ -45,6 +45,13 @@ export async function login(data: LoginRequest) {
         sameSite: 'strict',
         maxAge: 7 * 24 * 60 * 60, // 7 days
     })
+    // Set email cookie (not httpOnly, so it can be accessed by client/server)
+    cookieStore.set('email', result.email, {
+        httpOnly: false,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+    })
 
     redirect('/')
 }
@@ -70,5 +77,6 @@ export async function register(data: RegisterRequest) {
 export async function logout() {
     const cookieStore = await cookies()
     cookieStore.delete('token')
+    cookieStore.delete('email')
     redirect('/login')
 } 
