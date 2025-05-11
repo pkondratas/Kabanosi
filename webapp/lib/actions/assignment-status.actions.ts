@@ -1,0 +1,73 @@
+'use server'
+
+import { ReorderAssignmentStatusesRequest } from '@/types/api/requests/assignment-status';
+import { AssignmentStatusResponse } from '@/types/api/responses/assignment-status';
+import { cookies } from 'next/headers';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+async function getErrorMessage(response: { headers: { get(name: string): string | null }, json(): Promise<any>, text(): Promise<string> }): Promise<string> {
+    const contentType = response.headers.get('content-type')
+    if (contentType?.includes('application/json')) {
+        const error = await response.json()
+        return error.message || error.errors?.join(', ') || error || 'An error occurred'
+    }
+    return await response.text()
+}
+
+async function getToken() : Promise<string> {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('token')?.value
+
+    if (!token) {
+        throw new Error('No token found')
+    }
+
+    return token
+}
+
+export async function getAssignmentStatuses(projectId: string) : Promise<AssignmentStatusResponse[]> {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/assignment-statuses`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        }
+    })
+    
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+}
+
+export async function reorderAssignmentStatuses(
+    projectId: string, 
+    request: ReorderAssignmentStatusesRequest) : Promise<AssignmentStatusResponse[]> {
+    const token = await getToken();
+    
+    const response = await fetch(`${API_URL}/api/v1/assignment-statuses/reorder`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        },
+        body: JSON.stringify(request)
+    })
+    
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+}
+
+
+

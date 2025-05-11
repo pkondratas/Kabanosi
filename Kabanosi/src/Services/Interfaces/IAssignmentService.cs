@@ -17,6 +17,12 @@ public interface IAssignmentService
         int pageSize, 
         int pageNumber, 
         CancellationToken cancellationToken);
+
+    Task<IList<AssignmentResponseDto>> GetPlannedAssignmentsByProjectIdAsync(
+        Guid projectId,
+        int pageSize, 
+        int pageNumber, 
+        CancellationToken cancellationToken);
     
     Task<AssignmentResponseDto> ChangeAssignmentStatusAsync(
         Guid id, 
