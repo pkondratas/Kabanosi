@@ -12,4 +12,6 @@ public record AssignmentResponseDto
     public int? Estimation { get; init; }
     public DateOnly? Deadline { get; init; }
     public DateOnly? CompletedDate { get; init; }
+
+    public string? AssignmentLabelName { get; init; }
 } 

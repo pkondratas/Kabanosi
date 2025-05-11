@@ -5,6 +5,7 @@ namespace Kabanosi.Services.Interfaces;
 public interface IAssignmentService
 {
     Task<AssignmentResponseDto> CreateAssignmentAsync(
+        string reporterUserId,
         Guid projectId,
         AssignmentRequestDto assignmentDto, 
         CancellationToken cancellationToken);

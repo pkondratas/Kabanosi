@@ -27,7 +27,8 @@ public class MappingProfile : Profile
 
         // Assignment
         CreateMap<AssignmentRequestDto, Assignment>();
-        CreateMap<Assignment, AssignmentResponseDto>();
+        CreateMap<Assignment, AssignmentResponseDto>()
+            .ForMember(dest => dest.AssignmentLabelName, opt => opt.MapFrom(src => src.AssignmentLabel == null ? null : src.AssignmentLabel.Name));
 
         // Invitation
         CreateMap<Invitation, InvitationResponseDto>()
