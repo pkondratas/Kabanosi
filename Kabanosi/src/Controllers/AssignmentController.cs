@@ -68,6 +68,24 @@ public class AssignmentController : ControllerBase
         return Ok(assignments);
     }
 
+    [HttpGet("planned")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
+        public async Task<IActionResult> GetPlannedAssignmentsByProjectIdAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid projectId,
+        [FromQuery] int pageSize = 50,
+        [FromQuery] int pageNumber = 0,
+        CancellationToken cancellationToken = default)
+    {
+        var assignments = await _assignmentService.GetPlannedAssignmentsByProjectIdAsync(
+            projectId,
+            pageSize, 
+            pageNumber, 
+            cancellationToken);
+
+        return Ok(assignments);
+    }
+
     [HttpPatch("{id}/change-status")]
     [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
     public async Task<IActionResult> ChangeAssignmentStatusAsync(

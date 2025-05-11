@@ -61,6 +61,21 @@ public class AssignmentService : IAssignmentService
         return _mapper.Map<IList<AssignmentResponseDto>>(assignments);
     }
 
+    public async Task<IList<AssignmentResponseDto>> GetPlannedAssignmentsByProjectIdAsync(
+        Guid projectId,
+        int pageSize, 
+        int pageNumber,
+        CancellationToken cancellationToken)
+    {
+        var assignments = await _assignmentRepository.GetAllAsync(
+            pageSize,
+            pageNumber,
+            cancellationToken,
+            filter: a => a.ProjectId == projectId && a.IsPlanned);
+
+        return _mapper.Map<IList<AssignmentResponseDto>>(assignments);
+    }
+
     public async Task<AssignmentResponseDto> ChangeAssignmentStatusAsync(
         Guid id, 
         ChangeAssignmentStatusRequestDto request,

@@ -1,0 +1,70 @@
+'use server'
+
+import { AssignmentResponse } from "@/types/api/responses/assignment"
+import { cookies } from "next/headers"
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+
+async function getErrorMessage(response: { headers: { get(name: string): string | null }, json(): Promise<any>, text(): Promise<string> }): Promise<string> {
+    const contentType = response.headers.get('content-type')
+    if (contentType?.includes('application/json')) {
+        const error = await response.json()
+        return error.message || error.errors?.join(', ') || error || 'An error occurred'
+    }
+    return await response.text()
+}
+
+async function getToken() : Promise<string> {
+    const cookieStore = await cookies()
+    const token = cookieStore.get('token')?.value
+
+    if (!token) {
+        throw new Error('No token found')
+    }
+
+    return token
+}
+
+export async function getPlannedAssignments(projectId: string) : Promise<AssignmentResponse[]> {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/assignments/planned?pageSize=50&pageNumber=0`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        }
+    })
+    
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+}
+
+export async function changeAssignmentStatus(
+    projectId: string, 
+    assignmentId: string, 
+    statusId: string) : Promise<AssignmentResponse> {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/assignments/${assignmentId}/change-status`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        },
+        body: JSON.stringify({ newAssignmentStatusId: statusId })
+    })
+
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+} 
