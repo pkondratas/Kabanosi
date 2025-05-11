@@ -45,6 +45,47 @@ export async function getPlannedAssignments(projectId: string) : Promise<Assignm
     return response.json()
 }
 
+export async function getAssignments(projectId: string) : Promise<AssignmentResponse[]> {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/assignments?pageSize=50&pageNumber=0`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        }
+    })
+    
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+}
+
+export async function createAssignment(projectId: string, request: AssignmentRequest) : Promise<AssignmentResponse> {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/assignments`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        },
+        body: JSON.stringify(request)
+    })
+    
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+}
+
 export async function changeAssignmentStatus(
     projectId: string, 
     assignmentId: string, 
@@ -67,4 +108,4 @@ export async function changeAssignmentStatus(
     }
     
     return response.json()
-} 
+}

@@ -17,31 +17,35 @@ export function WorkingPane() {
   const [assignmentsByStatus, setAssignmentsByStatus] = useState<{ [key: string]: AssignmentResponse[] }>({});
 
   useEffect(() => {
-    if (projectId) {
-      const fetchData = async () => {
-        const statusesData = await getAssignmentStatuses(projectId as string);
-        const assignmentsData = await getPlannedAssignments(projectId as string);
-
-        statusesData.sort((s1, s2) => s1.order - s2.order);
-
-        setStatuses(statusesData);
-        setStatusOrder(statusesData.map(s => s.id));
-
-        const assignmentsByStatusMap: { [key: string]: AssignmentResponse[] } = {};
-
-        assignmentsData.forEach((assignment) => {
-          if (!assignmentsByStatusMap[assignment.assignmentStatusId]) {
-            assignmentsByStatusMap[assignment.assignmentStatusId] = [];
-          }
-      
-          assignmentsByStatusMap[assignment.assignmentStatusId].push(assignment);
-        });
-
-        setAssignmentsByStatus(assignmentsByStatusMap);
-      };
-      
-      fetchData();
+    if (!projectId) {
+      return;
     }
+
+    const fetchData = async () => {
+      const [statusesData, assignmentsData] = await Promise.all([
+        getAssignmentStatuses(projectId),
+        getPlannedAssignments(projectId)
+      ]);
+
+      statusesData.sort((s1, s2) => s1.order - s2.order);
+
+      setStatuses(statusesData);
+      setStatusOrder(statusesData.map(s => s.id));
+
+      const assignmentsByStatusMap: { [key: string]: AssignmentResponse[] } = {};
+
+      assignmentsData.forEach((assignment) => {
+        if (!assignmentsByStatusMap[assignment.assignmentStatusId]) {
+          assignmentsByStatusMap[assignment.assignmentStatusId] = [];
+        }
+    
+        assignmentsByStatusMap[assignment.assignmentStatusId].push(assignment);
+      });
+
+      setAssignmentsByStatus(assignmentsByStatusMap);
+    };
+    
+    fetchData();
   }, [projectId]);
 
   const moveStatusLeft = (index: number) => {
@@ -112,7 +116,7 @@ export function WorkingPane() {
             onMoveRight={() => moveStatusRight(index)}
             canMoveLeft={index > 0}
             canMoveRight={index < statusOrder.length - 1}
-            statuses={statuses.map(s => {return {id: s.id, name: s.name}})}
+            statuses={statuses}
             onAssignmentStatusChange={handleAssignmentStatusChange}
           />
         );

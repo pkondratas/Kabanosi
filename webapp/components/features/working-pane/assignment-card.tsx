@@ -1,22 +1,15 @@
 "use client";
 
+import { AssignmentResponse } from "@/types/api/responses/assignment";
+import { AssignmentStatusResponse } from "@/types/api/responses/assignment-status";
 import { useState } from "react";
 
 interface AssignmentCardProps {
-  assignment: { 
-    id: string; 
-    name: string;
-    assignmentStatusId: string;
-    estimation?: number;
-    label?: string;
-  };
-  statuses: { 
-    id: string; 
-    name: string; 
-  }[];
+  assignment: AssignmentResponse;
+  statuses: AssignmentStatusResponse[];
   onStatusChange: (assignmentId: string, newStatusId: string) => void;
 }
-  
+
 export default function AssignmentCard({ assignment, statuses, onStatusChange }: AssignmentCardProps) {
   const [status, setStatus] = useState(assignment.assignmentStatusId);
 
@@ -31,10 +24,10 @@ export default function AssignmentCard({ assignment, statuses, onStatusChange }:
     <div className="bg-white p-4 rounded-md shadow-sm hover:bg-gray-50">
       <p className="text-lg font-medium text-gray-700">{assignment.name}</p>
       <p className="text-sm text-gray-500">
-        Estimation: { assignment.estimation ? assignment.estimation : "None" }
+        Estimation: {assignment.estimation ? assignment.estimation : "None"}
       </p>
       <p className="text-sm text-gray-500">
-        Label: { assignment.label ? assignment.label : "None" }
+        Label: { assignment.assignmentLabelName ? assignment.assignmentLabelName : "None" }
       </p>
       <div className="mt-2">
         <label className="text-sm text-gray-600 mr-1" htmlFor="status">

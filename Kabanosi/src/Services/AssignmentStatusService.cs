@@ -132,4 +132,19 @@ public class AssignmentStatusService : IAssignmentStatusService
         await _assignmentStatusRepository.DeleteAsync(id, cancellationToken);
         await _unitOfWork.SaveAsync();
     }
+
+    public async Task<AssignmentStatusResponseDto> GetInitialAssignmentStatus(
+        Guid projectId,
+        CancellationToken cancellationToken)
+    {
+        var assignmentStatus = await _assignmentStatusRepository
+            .FirstOrDefaultAsync(a => a.ProjectId == projectId && a.Order == 0);
+
+        if (assignmentStatus is null)
+        {
+            throw new NotFoundException("Project does not have initial assignment status");
+        }
+
+        return _mapper.Map<AssignmentStatusResponseDto>(assignmentStatus);
+    }
 }

@@ -9,4 +9,5 @@ export interface AssignmentResponse {
     estimation?: number;
     deadline?: Date;
     completedDate?: Date;
+    assignmentLabelName?: string;
 }

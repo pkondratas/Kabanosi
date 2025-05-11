@@ -1,4 +1,5 @@
 using Kabanosi.Dtos.Assignment;
+using Kabanosi.Extensions;
 using Kabanosi.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -28,7 +29,13 @@ public class AssignmentController : ControllerBase
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
+        var userId = User.GetUserId();
+
+        if (userId == null)
+            return Unauthorized("Could not get user id from a token.");
+            
         var result = await _assignmentService.CreateAssignmentAsync(
+            userId,
             projectId,
             assignmentDto, 
             cancellationToken);

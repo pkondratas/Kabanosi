@@ -10,21 +10,28 @@ namespace Kabanosi.Services;
 
 public class AssignmentService : IAssignmentService
 {
+    private readonly IAssignmentStatusService _assignmentStatusService;
     private readonly AssignmentRepository _assignmentRepository;
+    private readonly ProjectMemberRepository _projectMemberRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
 
     public AssignmentService(
+        IAssignmentStatusService assignmentStatusService,
         AssignmentRepository assignmentRepository,
+        ProjectMemberRepository projectMemberRepository,
         IUnitOfWork unitOfWork,
         IMapper mapper)
     {
+        _assignmentStatusService = assignmentStatusService;
         _assignmentRepository = assignmentRepository;
+        _projectMemberRepository = projectMemberRepository;
         _unitOfWork = unitOfWork;
         _mapper = mapper;
     }
 
     public async Task<AssignmentResponseDto> CreateAssignmentAsync(
+        string reporterUserId,
         Guid projectId,
         AssignmentRequestDto assignmentDto,
         CancellationToken cancellationToken)
@@ -32,7 +39,30 @@ public class AssignmentService : IAssignmentService
         var assignment = _mapper.Map<Assignment>(assignmentDto);
         assignment.ProjectId = projectId;
         
+        if (assignmentDto.AssignmentStatusId is null)
+        {
+            var initialAssignmentStatus = await _assignmentStatusService.GetInitialAssignmentStatus(projectId, cancellationToken);
+            assignment.AssignmentStatusId = initialAssignmentStatus.Id;
+        }
+        
         assignment = await _assignmentRepository.InsertAsync(assignment, cancellationToken);
+
+        var reporterProjectMember = await _projectMemberRepository.FirstOrDefaultTrackedAsync(
+            pm => pm.ProjectId == projectId && pm.UserId == reporterUserId,
+            cancellationToken,
+            pm => pm.ProjectMemberAssignments);
+        
+        // add null check ???????????????????????????????????????????????????????????????
+
+        var projectMemberAssignment = new ProjectMemberAssignment
+        {
+            AssignmentId = assignment.Id,
+            ProjectMemberId = reporterProjectMember.Id,
+            IsReporter = true
+        };
+        
+        reporterProjectMember.ProjectMemberAssignments.Add(projectMemberAssignment);
+        
         await _unitOfWork.SaveAsync();
 
         return _mapper.Map<AssignmentResponseDto>(assignment);
@@ -56,7 +86,8 @@ public class AssignmentService : IAssignmentService
             pageSize,
             pageNumber,
             cancellationToken,
-            filter: a => a.ProjectId == projectId);
+            filter: a => a.ProjectId == projectId,
+            includes: a => a.AssignmentLabel);
 
         return _mapper.Map<IList<AssignmentResponseDto>>(assignments);
     }
@@ -71,7 +102,8 @@ public class AssignmentService : IAssignmentService
             pageSize,
             pageNumber,
             cancellationToken,
-            filter: a => a.ProjectId == projectId && a.IsPlanned);
+            filter: a => a.ProjectId == projectId && a.IsPlanned,
+            includes: a => a.AssignmentLabel);
 
         return _mapper.Map<IList<AssignmentResponseDto>>(assignments);
     }

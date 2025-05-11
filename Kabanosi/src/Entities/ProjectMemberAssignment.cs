@@ -14,7 +14,7 @@ namespace Kabanosi.Entities
         public bool IsReporter { get; set; }
 
         [Timestamp]
-        public required byte[] Version { get; set; }
+        public byte[] Version { get; set; }
 
         public ProjectMember ProjectMember { get; set; } = null!;
         public Assignment Assignment { get; set; } = null!;

@@ -28,4 +28,8 @@ public interface IAssignmentStatusService
         CancellationToken cancellationToken);
 
     Task DeleteAssignmentStatusAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<AssignmentStatusResponseDto> GetInitialAssignmentStatus(
+        Guid projectId,
+        CancellationToken cancellationToken);
 }
