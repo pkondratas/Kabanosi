@@ -7,7 +7,7 @@ export default function ProtectedLayout({
 }) {
   return (
     <>
-      <header className="fixed top-0 w-full z-50">
+      <header className="top-0 w-full z-50">
         <LoggedInNavbar />
       </header>
       <main>{children}</main>
