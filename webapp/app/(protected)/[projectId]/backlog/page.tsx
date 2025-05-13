@@ -1,4 +1,4 @@
-import Backlog from '@/components/features/protected/backlog/backlog';
+import Backlog from '@/components/features/protected/project/backlog/backlog';
 
 export default function Page() {
 	return (

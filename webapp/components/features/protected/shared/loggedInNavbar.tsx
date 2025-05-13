@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { logout } from "@/lib/actions/auth.actions";
 import { cookies } from "next/headers";
-import { ProjectsDropdownSearch } from "./projectsDropdownSearch";
+import { ProjectsDropdownSearch } from "./projectsSearchDropdown";
 import { NotificationSearchDropdown } from "./notificationSearchDropdown";
 
 export async function LoggedInNavbar() {
