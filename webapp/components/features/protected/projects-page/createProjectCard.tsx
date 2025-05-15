@@ -1,65 +1,78 @@
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger, DialogFooter, DialogHeader } from "@/components/ui/dialog";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogHeader,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { createProject } from "@/lib/actions/project.actions";
-import { ProjectResponse } from "@/types/api/responses/project";
 import { Label } from "@radix-ui/react-label";
 import { Loader2, Plus } from "lucide-react";
 import { useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
-type CreateProjectCardProps = {
-  setProjects: React.Dispatch<React.SetStateAction<ProjectResponse[]>>,
-};
+import { toast } from "sonner";
 
 const errorMessages: Record<number, string> = {
   1: "Please provide both name and description.",
   2: "Request was not processed correctly.",
 };
 
-export const CreateProjectCard = ({ setProjects }: CreateProjectCardProps) => {
+export const CreateProjectCard = () => {
   const [isOpen, setOpen] = useState(false);
   const [error, setError] = useState({ isError: false, messageIdx: 0 });
   const [isLoading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
 
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLInputElement>(null);
 
   const handleClose = () => {
-    setError(prev => {
+    setError((prev) => {
       return { ...prev, isError: false, messageIdx: 0 };
     });
     setOpen(false);
-  }
+  };
 
   const handleCreate = async () => {
     const name = nameRef.current?.value;
     const description = descriptionRef.current?.value;
 
     if (!name || !description) {
-      setError(prev => {
+      setError((prev) => {
         return { ...prev, isError: true, messageIdx: 1 };
       });
-
       return;
     }
-    
+
     setLoading(true);
     createProject({ name, description })
-      .catch(_ => setError(prev => {
-        return { ...prev, isError: true, messageIdx: 2 }
-      }))
-      .then(data => {
+      .catch((_) =>
+        setError((prev) => {
+          return { ...prev, isError: true, messageIdx: 2 };
+        })
+      )
+      .then((data) => {
         if (data) {
-          setProjects(prev => [ ...prev, data ])
-          setError(prev => {
+          queryClient.invalidateQueries({ queryKey: ["projects"] });
+          setError((prev) => {
             return { ...prev, isError: false, messageIdx: 0 };
           });
           setOpen(false);
         } else {
-          setError(prev => {
+          setError((prev) => {
             return { ...prev, isError: true, messageIdx: 2 };
           });
         }
@@ -67,7 +80,7 @@ export const CreateProjectCard = ({ setProjects }: CreateProjectCardProps) => {
       .finally(() => {
         setLoading(false);
       });
-  }
+  };
 
   return (
     <div className="flex flex-col items-center w-full">
@@ -76,16 +89,20 @@ export const CreateProjectCard = ({ setProjects }: CreateProjectCardProps) => {
           <CardHeader className="text-xl font-bold text-center">
             Beginning of your legendary project...
           </CardHeader>
-          <CardDescription className="pl-6">
-            Click to start
-          </CardDescription>
+          <CardDescription className="pl-6">Click to start</CardDescription>
           <Dialog open={isOpen} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-              <Button variant="ghost" className="self-center hover:bg-gray-300 size-12">
-                <Plus/>
+              <Button
+                variant="ghost"
+                className="self-center hover:bg-gray-300 size-12"
+              >
+                <Plus />
               </Button>
             </DialogTrigger>
-            <DialogContent onClose={() => handleClose()} className="sm:max-w-[425px]">
+            <DialogContent
+              onClose={() => handleClose()}
+              className="sm:max-w-[425px]"
+            >
               <DialogHeader>
                 <DialogTitle>Create project</DialogTitle>
                 <DialogDescription>
@@ -97,13 +114,17 @@ export const CreateProjectCard = ({ setProjects }: CreateProjectCardProps) => {
                   <Label htmlFor="name" className="text-right">
                     Name
                   </Label>
-                  <Input id="name" className="col-span-3" ref={nameRef}/>
+                  <Input id="name" className="col-span-3" ref={nameRef} />
                 </div>
                 <div className="grid grid-cols-4 items-center gap-4">
                   <Label htmlFor="description" className="text-right">
                     Description
                   </Label>
-                  <Input id="description" className="col-span-3" ref={descriptionRef}/>
+                  <Input
+                    id="description"
+                    className="col-span-3"
+                    ref={descriptionRef}
+                  />
                 </div>
               </div>
               {error.isError && (
@@ -116,13 +137,11 @@ export const CreateProjectCard = ({ setProjects }: CreateProjectCardProps) => {
                   <Loader2 className="h-10 w-10 animate-spin text-primary" />
                 </div>
               )}
-              <Button onClick={async () => await handleCreate()}>
-                Create
-              </Button>
+              <Button onClick={async () => await handleCreate()}>Create</Button>
             </DialogContent>
           </Dialog>
         </Card>
       </div>
     </div>
   );
-}
+};

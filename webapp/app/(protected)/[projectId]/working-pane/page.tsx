@@ -1,4 +1,4 @@
-import { WorkingPane } from "@/components/features/protected/working-pane/working-pane";
+import { WorkingPane } from "@/components/features/protected/project/working-pane/working-pane";
 
 export default function Page() {
 	return (

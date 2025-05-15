@@ -34,11 +34,12 @@ builder.Services
 
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(p =>
+    options.AddDefaultPolicy(policy =>
     {
-        p.AllowAnyOrigin()
+        policy.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -106,6 +107,19 @@ builder.Services.AddAuthentication(options =>
             ValidateIssuer = false,
             ValidateAudience = false
         };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+                if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notify"))
+                {
+                    context.Token = accessToken;
+                }
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddEndpointsApiExplorer();
@@ -141,7 +155,7 @@ builder.Services.AddSwaggerGen(options =>
             new List<string>()
         }
     });
-    
+
     options.EnableAnnotations();
 });
 
