@@ -41,15 +41,17 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.InvitationId, opt => opt.MapFrom(src => src.Id))
             .ForMember(dest => dest.ProjectName, opt => opt.MapFrom(src => src.Project.Name))
             .ForMember(dest => dest.RoleOffered, opt => opt.MapFrom(src => src.ProjectRole));
-        
+
         // AssignmentStatus
         CreateMap<AssignmentStatus, AssignmentStatusResponseDto>();
-        
+
         // AssignmentLabel
         CreateMap<AssignmentLabel, AssignmentLabelResponseDto>();
-        
+
         // ProjectMember
         CreateMap<ProjectMemberUpdateRequestDto, ProjectMember>();
-        CreateMap<ProjectMember, ProjectMemberResponseDto>();
+        CreateMap<ProjectMember, ProjectMemberResponseDto>()
+            .ForMember(dest => dest.Username, opt => opt.MapFrom(src => src.User.UserName))
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.User.Email));
     }
 }

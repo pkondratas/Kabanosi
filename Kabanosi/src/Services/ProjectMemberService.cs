@@ -33,7 +33,8 @@ public class ProjectMemberService : IProjectMemberService
             pageSize,
             pageNumber,
             cancellationToken,
-            filter: m => m.ProjectId == projectId);
+            filter: m => m.ProjectId == projectId,
+            includes: m => m.User);
         
         return _mapper.Map<List<ProjectMemberResponseDto>>(members);
     }
