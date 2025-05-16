@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from 'react';
-import { getProjectMembers, editProjectMemberRole } from '@/lib/actions/project-member.actions';
-import { ProjectMemberResponse } from '@/types/api/responses/project-member';
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { getProjectMembers, editProjectMemberRole, deleteProjectMember } from "@/lib/actions/project-member.actions";
+import { ProjectMemberResponse } from "@/types/api/responses/project-member";
+import MemberCard from "./member-card";
 
 export default function Team() {
     const pathname = usePathname();
@@ -45,6 +46,15 @@ export default function Team() {
         }
     };
 
+    const handleDelete = async (memberId: string) => {
+        try {
+            setMembers(prev => prev.filter(m => m.id !== memberId));
+            await deleteProjectMember(projectId as string, memberId);
+        } catch (error) {
+            console.error("Failed to delete member:", error);
+        }
+    };
+
     return (
         <div className="p-6 flex flex-col items-center gap-10">
             <h1 className="text-2xl font-bold mb-6">Team members</h1>
@@ -53,22 +63,12 @@ export default function Team() {
             ) : (
                 <div className="w-full max-w-5xl space-y-4">
                     {members.map((member) => (
-                        <div key={member.id} className="bg-white p-4 shadow rounded-lg flex justify-between items-center">
-                            <div>
-                                <h3 className="text-lg font-semibold">{member.username}</h3>
-                                <p className="text-gray-500 text-sm">{member.email}</p>
-                            </div>
-                            <div className="flex items-center space-x-4">
-                                <select
-                                    className="border rounded px-2 py-1"
-                                    value={member.projectRole}
-                                    onChange={(e) => handleRoleChange(member.id, parseInt(e.target.value))}
-                                >
-                                    <option value={0}>Admin</option>
-                                    <option value={1}>Member</option>
-                                </select>
-                            </div>
-                        </div>
+                        <MemberCard
+                            key={member.id}
+                            member={member}
+                            onRoleChange={handleRoleChange}
+                            onDelete={handleDelete}
+                        />
                     ))}
                 </div>
             )}

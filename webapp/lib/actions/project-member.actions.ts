@@ -59,3 +59,21 @@ export const editProjectMemberRole = async (
 
     return await response.json()
 }
+
+export const deleteProjectMember = async (projectId: string, memberId: string): Promise<void> => {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/project-members/${memberId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-Project-Id': projectId
+        }
+    })
+
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+}
