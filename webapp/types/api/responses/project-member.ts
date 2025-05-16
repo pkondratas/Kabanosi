@@ -3,4 +3,6 @@ export interface ProjectMemberResponse {
     projectRole: number;
     userId: string;
     projectId: string;
+    username: string;
+    email: string;
 }
