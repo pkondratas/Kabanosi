@@ -52,4 +52,16 @@ public class ProjectController(IProjectService projectService) : ControllerBase
 
         return Ok();
     }
+
+    [HttpGet("{projectId}")]
+    [Authorize]
+    public async Task<IActionResult> GetProjectByIdAsync(
+        [FromRoute] Guid projectId,
+        CancellationToken cancellationToken = default)
+    {
+        var project = await projectService.GetProjectByIdAsync(projectId, cancellationToken);
+        if (project == null)
+            return NotFound();
+        return Ok(project);
+    }
 }

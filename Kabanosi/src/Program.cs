@@ -72,7 +72,7 @@ builder.Services.AddSignalR();
 builder.Services.AddScoped<INotificationService, NotificationService>();
 
 // Custom policy-based authorization service (project scoped auth)
-builder.Services.AddSingleton<IAuthorizationHandler, ProjectRoleHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, ProjectRoleHandler>();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy("ProjectMemberAndAdmin", policy =>
         policy.Requirements.Add(new ProjectRoleRequirement([nameof(ProjectRole.ProjectAdmin)])))
