@@ -13,6 +13,14 @@ export default function Team() {
     const [members, setMembers] = useState<ProjectMemberResponse[]>([]);
     const [loading, setLoading] = useState(true);
 
+    function getEmailFromCookie(): string | null {
+        if (typeof document === "undefined") return null;
+        const match = document.cookie.match(/(?:^|;\s*)email=([^;]*)/);
+        return match ? decodeURIComponent(match[1]) : null;
+    }
+
+    const currentUserEmail = getEmailFromCookie();
+
     useEffect(() => {
         if (!projectId) return;
 
@@ -66,6 +74,7 @@ export default function Team() {
                         <MemberCard
                             key={member.id}
                             member={member}
+                            isCurrentUser={member.email === currentUserEmail}
                             onRoleChange={handleRoleChange}
                             onDelete={handleDelete}
                         />
