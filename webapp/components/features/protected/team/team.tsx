@@ -20,6 +20,8 @@ export default function Team() {
     }
 
     const currentUserEmail = getEmailFromCookie();
+    const currentUser = members.find(m => m.email === currentUserEmail);
+    const currentUserRole = currentUser?.projectRole;
 
     useEffect(() => {
         if (!projectId) return;
@@ -75,6 +77,7 @@ export default function Team() {
                             key={member.id}
                             member={member}
                             isCurrentUser={member.email === currentUserEmail}
+                            currentUserRole={currentUserRole ?? 1}
                             onRoleChange={handleRoleChange}
                             onDelete={handleDelete}
                         />

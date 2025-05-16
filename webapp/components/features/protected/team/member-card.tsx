@@ -3,11 +3,12 @@ import { ProjectMemberResponse } from "@/types/api/responses/project-member";
 interface MemberCardProps {
     member: ProjectMemberResponse;
     isCurrentUser: boolean;
+    currentUserRole: number;
     onRoleChange: (memberId: string, newRole: number) => void;
     onDelete: (memberId: string) => void;
 }
 
-export default function MemberCard({ member, isCurrentUser, onRoleChange, onDelete }: MemberCardProps) {
+export default function MemberCard({ member, isCurrentUser, currentUserRole, onRoleChange, onDelete }: MemberCardProps) {
     const roleText = member.projectRole === 0 ? "Admin" : "Member";
 
     return (
@@ -18,9 +19,7 @@ export default function MemberCard({ member, isCurrentUser, onRoleChange, onDele
             </div>
             <div className="flex items-center space-x-4">
 
-                {isCurrentUser ? (
-                    <span className="px-2 py-1">{roleText}</span>
-                ) : (
+                {!isCurrentUser && currentUserRole === 0  ? (
                     <select
                         className="border rounded px-2 py-1"
                         value={member.projectRole}
@@ -31,16 +30,18 @@ export default function MemberCard({ member, isCurrentUser, onRoleChange, onDele
                         <option value={0}>Admin</option>
                         <option value={1}>Member</option>
                     </select>
+                ) : (
+                    <span className="px-2 py-1">{roleText}</span>
                 )}
 
-                {!isCurrentUser && (
+                {!isCurrentUser && currentUserRole === 0 ? (
                     <button
                         onClick={() => onDelete(member.id)}
                         className="px-3 py-1 text-sm font-medium text-white bg-red-500 rounded hover:bg-red-600 transition-colors"
                     >
                         Remove
                     </button>
-                )}
+                ) : null}
             </div>
         </div>
     );
