@@ -13,4 +13,11 @@ public class ProjectRepository(DatabaseContext context) : GenericRepository<Proj
             .Select(p => p.Name)
             .SingleAsync(ct);
     }
+
+    public async Task<Project?> GetProjectByIdAsync(Guid projectId, CancellationToken ct)
+    {
+        return await context.Projects
+            .Include(p => p.ProjectMembers) // Include related data if needed
+            .FirstOrDefaultAsync(p => p.Id == projectId, ct);
+    }
 }

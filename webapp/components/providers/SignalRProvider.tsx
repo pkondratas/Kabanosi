@@ -33,7 +33,6 @@ export const SignalRProvider = ({
       .withUrl("https://localhost:7249/hubs/notify", {
         accessTokenFactory: () => token,
       })
-      .configureLogging(LogLevel.Information)
       .withAutomaticReconnect()
       .build();
 

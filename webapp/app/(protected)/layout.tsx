@@ -6,6 +6,7 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import { SelectedProjectProvider } from "@/components/providers/SelectedProjectProvider";
 import { SignalRProvider } from "@/components/providers/SignalRProvider";
 import { cookies } from "next/headers";
+import { ProjectSwitchProvider } from "@/components/providers/ProjectSwitchProvider";
 
 export default async function ProtectedLayout({
   children,
@@ -33,12 +34,14 @@ export default async function ProtectedLayout({
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <SelectedProjectProvider>
-        <header className="fixed top-0 left-0 w-full z-50">
-          <SignalRProvider token={token}>
-            <LoggedInNavbar />
-          </SignalRProvider>
-        </header>
-        <main className="mt-16">{children}</main>
+        <ProjectSwitchProvider>
+          <header className="fixed top-0 left-0 w-full z-50">
+            <SignalRProvider token={token}>
+              <LoggedInNavbar />
+            </SignalRProvider>
+          </header>
+          <main className="mt-16">{children}</main>
+        </ProjectSwitchProvider>
       </SelectedProjectProvider>
     </HydrationBoundary>
   );

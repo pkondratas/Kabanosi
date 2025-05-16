@@ -9,4 +9,5 @@ public interface IProjectService
     Task<IList<ProjectResponseDto>> GetProjectsAsync(int pageSize, int pageNumber, CancellationToken cancellationToken);
     Task<ProjectResponseDto> UpdateProjectAsync(Guid projectId, JsonPatchDocument<ProjectRequestDto> projectDoc, CancellationToken cancellationToken);
     Task DeleteProjectAsync(Guid projectId, CancellationToken cancellationToken);
+    Task<ProjectResponseDto?> GetProjectByIdAsync(Guid projectId, CancellationToken cancellationToken);
 }

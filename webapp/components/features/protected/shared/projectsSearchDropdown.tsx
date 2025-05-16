@@ -22,6 +22,7 @@ import { getProjects } from "@/lib/actions/project.actions";
 import { ProjectResponse } from "@/types/api/responses/project";
 import { useRouter, usePathname } from "next/navigation";
 import { useSelectedProject } from "@/components/providers/SelectedProjectProvider";
+import { useProjectSwitch } from "@/components/providers/ProjectSwitchProvider";
 
 export function ProjectsDropdownSearch() {
   const { data: projects = [] } = useQuery({
@@ -32,6 +33,7 @@ export function ProjectsDropdownSearch() {
   const { selectedId, setSelectedId } = useSelectedProject();
   const router = useRouter();
   const pathname = usePathname();
+  const { setIsSwitching } = useProjectSwitch();
 
   React.useEffect(() => {
     if (pathname === "/") {
@@ -67,6 +69,7 @@ export function ProjectsDropdownSearch() {
                   key={project.id}
                   value={project.name}
                   onSelect={() => {
+                    setIsSwitching(true);
                     setSelectedId(project.id);
                     setOpen(false);
                     router.push(`/${project.id}/backlog`);

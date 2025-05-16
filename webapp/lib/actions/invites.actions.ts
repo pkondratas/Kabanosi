@@ -6,6 +6,12 @@ import { cookies } from "next/headers";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+// Disable SSL verification in development
+if (process.env.NODE_ENV === 'development') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+}
+
+
 const handleResponse = async (response: Response) => {
     if (!response.ok) {
         const errorMessage = await getErrorMessage(response);

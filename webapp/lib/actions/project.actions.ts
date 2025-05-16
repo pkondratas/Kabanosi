@@ -7,6 +7,12 @@ import { CreateProjectRequest } from "@/types/api/requests/project";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+// Disable SSL verification in development
+if (process.env.NODE_ENV === 'development') {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+}
+
+
 const handleResponse = async (response: Response) => {
     if (!response.ok) {
         const errorMessage = await getErrorMessage(response);
@@ -30,7 +36,7 @@ export const getProjects = async (): Promise<ProjectResponse[]> => {
 
 export const createProject = async (data: CreateProjectRequest): Promise<ProjectResponse> => {
     const cookieStore = await cookies();
-    
+
     const response = await fetch(`${API_URL}/api/v1/projects`, {
         method: 'POST',
         headers: {
@@ -38,6 +44,20 @@ export const createProject = async (data: CreateProjectRequest): Promise<Project
             'Authorization': `Bearer ${cookieStore.get('token')?.value}`,
         },
         body: JSON.stringify(data),
+    });
+
+    await handleResponse(response);
+
+    return await response.json();
+}
+
+export const getProjectById = async (projectId: string): Promise<ProjectResponse> => {
+    const cookieStore = await cookies();
+
+    const response = await fetch(`${API_URL}/api/v1/projects/${projectId}`, {
+        headers: {
+            'Authorization': `Bearer ${cookieStore.get('token')?.value}`,
+        },
     });
 
     await handleResponse(response);

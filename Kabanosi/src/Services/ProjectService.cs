@@ -42,7 +42,7 @@ public class ProjectService(
             projectMemberRepository.InsertAsync(adminMember, cancellationToken),
             assignmentStatusService.CreateDefaultAssignmentStatusesAsync(project.Id, cancellationToken)
         );
-        
+
         await unitOfWork.SaveAsync();
         await unitOfWork.CommitAsync();
 
@@ -75,7 +75,7 @@ public class ProjectService(
         mapper.Map(mappedProjectDto, project);
 
         await unitOfWork.SaveAsync();
-    
+
         return mapper.Map<ProjectResponseDto>(project);
     }
 
@@ -86,5 +86,11 @@ public class ProjectService(
         await projectRepository.DeleteAsync(projectId, cancellationToken);
 
         await unitOfWork.SaveAsync();
+    }
+
+    public async Task<ProjectResponseDto?> GetProjectByIdAsync(Guid projectId, CancellationToken cancellationToken)
+    {
+        var project = await projectRepository.GetProjectByIdAsync(projectId, cancellationToken);
+        return project == null ? null : mapper.Map<ProjectResponseDto>(project);
     }
 }
