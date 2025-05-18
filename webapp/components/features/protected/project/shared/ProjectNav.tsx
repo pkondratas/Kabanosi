@@ -41,7 +41,9 @@ export default function ProjectNav({
     >
       <div className="flex items-center gap-4 text-xl font-bold text-gray-800">
         <WindowIcon className="h-6 w-6 text-blue-500" />
-        {projectName}
+        <div className="max-w-120 break-words text-ellipsis line-clamp-1 pr-10">
+          {projectName}
+        </div>
       </div>
       <div className="flex-1 flex justify-center">
         <div className="flex gap-8">

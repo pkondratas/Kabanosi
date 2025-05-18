@@ -3,7 +3,7 @@
 import { ProjectResponse } from "@/types/api/responses/project";
 import { getErrorMessage } from "../utils";
 import { cookies, headers } from "next/headers";
-import { CreateProjectRequest } from "@/types/api/requests/project";
+import { CreateProjectRequest, JsonPatchProject } from "@/types/api/requests/project";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -64,3 +64,21 @@ export const getProjectById = async (projectId: string): Promise<ProjectResponse
 
     return await response.json();
 }
+
+export const patchProject = async (projectId: string, patchData: JsonPatchProject[]): Promise<ProjectResponse> => {
+    const cookieStore = await cookies();
+  
+    const response = await fetch(`${API_URL}/api/v1/projects`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json-patch+json",
+        "Authorization": `Bearer ${cookieStore.get("token")?.value}`,
+        'X-Project-Id': projectId,
+      },
+      body: JSON.stringify(patchData),
+    });
+  
+    await handleResponse(response);
+  
+    return await response.json();
+  };

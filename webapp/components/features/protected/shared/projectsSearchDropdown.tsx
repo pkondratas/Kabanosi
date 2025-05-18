@@ -21,7 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getProjects } from "@/lib/actions/project.actions";
 import { ProjectResponse } from "@/types/api/responses/project";
 import { useRouter, usePathname } from "next/navigation";
-import { useSelectedProject } from "@/components/providers/SelectedProjectProvider";
+import { useProject } from "@/components/providers/SelectedProjectProvider";
 import { useProjectSwitch } from "@/components/providers/ProjectSwitchProvider";
 
 export function ProjectsDropdownSearch() {
@@ -30,18 +30,18 @@ export function ProjectsDropdownSearch() {
     queryFn: getProjects,
   });
   const [open, setOpen] = React.useState(false);
-  const { selectedId, setSelectedId } = useSelectedProject();
+  const { project, setProject } = useProject();
   const router = useRouter();
   const pathname = usePathname();
   const { setIsSwitching } = useProjectSwitch();
 
   React.useEffect(() => {
     if (pathname === "/") {
-      setSelectedId(null);
+      setProject(null);
     }
-  }, [pathname, setSelectedId]);
+  }, [pathname, setProject]);
 
-  const selectedProject = projects.find((p) => p.id === selectedId);
+  const selectedProject = projects.find((p) => p.id === project?.id);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -64,24 +64,24 @@ export function ProjectsDropdownSearch() {
           <CommandList>
             <CommandEmpty>No project found.</CommandEmpty>
             <CommandGroup>
-              {projects.map((project: ProjectResponse) => (
+              {projects.map((proj: ProjectResponse) => (
                 <CommandItem
-                  key={project.id}
-                  value={project.name}
+                  key={proj.id}
+                  value={proj.name}
                   onSelect={() => {
                     setIsSwitching(true);
-                    setSelectedId(project.id);
+                    setProject(proj);
                     setOpen(false);
-                    router.push(`/${project.id}/backlog`);
+                    router.push(`/${proj.id}/backlog`);
                   }}
                 >
                   <span className="truncate max-w-[150px] overflow-hidden text-ellipsis">
-                    {project.name}
+                    {proj.name}
                   </span>
                   <Check
                     className={cn(
                       "ml-auto",
-                      selectedId === project.id ? "opacity-100" : "opacity-0"
+                      proj.id === project?.id ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>
