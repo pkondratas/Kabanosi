@@ -13,7 +13,6 @@ import {
   DialogDescription,
   DialogTitle,
   DialogTrigger,
-  DialogFooter,
   DialogHeader,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";

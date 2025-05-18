@@ -1,9 +1,10 @@
 "use client";
+import { ProjectResponse } from "@/types/api/responses/project";
 import React, { createContext, useContext, useState } from "react";
 
 type SelectedProjectContextType = {
-  selectedId: string | null;
-  setSelectedId: (id: string | null) => void;
+  project: ProjectResponse | null;
+  setProject: (id: ProjectResponse | null) => void;
 };
 
 const SelectedProjectContext = createContext<
@@ -15,15 +16,15 @@ export function SelectedProjectProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [project, setProject] = useState<ProjectResponse | null>(null);
   return (
-    <SelectedProjectContext.Provider value={{ selectedId, setSelectedId }}>
+    <SelectedProjectContext.Provider value={{ project, setProject }}>
       {children}
     </SelectedProjectContext.Provider>
   );
 }
 
-export function useSelectedProject() {
+export function useProject() {
   const ctx = useContext(SelectedProjectContext);
   if (!ctx)
     throw new Error(

@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useSelectedProject } from "@/components/providers/SelectedProjectProvider";
+import { useProject } from "@/components/providers/SelectedProjectProvider";
 
 export const ProjectsCarousel = () => {
   const { data: projects = [] } = useQuery({
@@ -36,7 +36,7 @@ export const ProjectsCarousel = () => {
   });
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
-  const { setSelectedId } = useSelectedProject();
+  const { setProject } = useProject();
 
   useEffect(() => {
     if (!api) return;
@@ -63,7 +63,7 @@ export const ProjectsCarousel = () => {
               <Link
                 href={`/${project.id}/backlog`}
                 className="block p-1"
-                onClick={() => setSelectedId(project.id)}
+                onClick={() => setProject(project)}
               >
                 <Card className="min-h-55 bg-gray-100 p-4 rounded-lg shadow-lg hover:bg-gray-200">
                   <TooltipProvider>
