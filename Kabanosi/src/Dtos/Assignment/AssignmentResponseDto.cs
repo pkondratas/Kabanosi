@@ -14,4 +14,6 @@ public record AssignmentResponseDto
     public DateOnly? CompletedDate { get; init; }
 
     public string? AssignmentLabelName { get; init; }
+    public string? AssigneeUsername { get; init; }
+    public string? ReportedUsername { get; init; }
 } 

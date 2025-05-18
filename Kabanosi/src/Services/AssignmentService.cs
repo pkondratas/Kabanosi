@@ -87,7 +87,9 @@ public class AssignmentService : IAssignmentService
             pageNumber,
             cancellationToken,
             filter: a => a.ProjectId == projectId,
-            includes: a => a.AssignmentLabel);
+            orderBy: null,
+            asTracking: false,
+            a => a.AssignmentLabel, a => a.ProjectMemberAssignments);
 
         return _mapper.Map<IList<AssignmentResponseDto>>(assignments);
     }

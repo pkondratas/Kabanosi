@@ -15,7 +15,7 @@ export default async function Page({
 
   return (
     <WorkingPane
-      statuses={statuses}
+      initialStatuses={statuses}
       assignments={assignments}
       projectId={projectId}
     />
