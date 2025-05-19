@@ -13,8 +13,7 @@ public abstract class GenericRepository<TEntity>(DatabaseContext context)
     protected DatabaseContext context = context;
     protected DbSet<TEntity> dbSet = context.Set<TEntity>();
 
-    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(
-        int? pageSize = default,
+    public virtual async Task<IEnumerable<TEntity>> GetAllAsync(int? pageSize = default,
         int? pageNumber = default,
         CancellationToken cancellationToken = default,
         Expression<Func<TEntity, bool>>? filter = null,

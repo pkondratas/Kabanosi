@@ -8,10 +8,13 @@ public record AssignmentResponseDto
     public Guid ProjectId { get; init; }
     public int? AssignmentLabelId { get; init; }
     public Guid AssignmentStatusId { get; init; }
+    public Guid? AssigneeId { get; init; }
     public bool IsPlanned { get; init; }
     public int? Estimation { get; init; }
     public DateOnly? Deadline { get; init; }
     public DateOnly? CompletedDate { get; init; }
 
     public string? AssignmentLabelName { get; init; }
+    public string? AssigneeUsername { get; init; }
+    public string ReporterUsername { get; init; }
 } 

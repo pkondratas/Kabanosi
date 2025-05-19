@@ -46,9 +46,7 @@ public class AssignmentLabelService : IAssignmentLabelService
         Guid projectId, 
         CancellationToken cancellationToken)
     {
-        var assignmentLabels = await _assignmentLabelRepository.GetAllAsync(
-            filter: l => l.ProjectId == projectId,
-            cancellationToken: cancellationToken);
+        var assignmentLabels = await _assignmentLabelRepository.GetAllAsync(cancellationToken: cancellationToken, filter: l => l.ProjectId == projectId);
         
         return assignmentLabels.Select(_mapper.Map<AssignmentLabelResponseDto>);
     }

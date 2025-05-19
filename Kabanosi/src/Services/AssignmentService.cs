@@ -45,23 +45,16 @@ public class AssignmentService : IAssignmentService
             assignment.AssignmentStatusId = initialAssignmentStatus.Id;
         }
         
-        assignment = await _assignmentRepository.InsertAsync(assignment, cancellationToken);
-
-        var reporterProjectMember = await _projectMemberRepository.FirstOrDefaultTrackedAsync(
+        var reporterProjectMember = await _projectMemberRepository.FirstOrDefaultAsync(
             pm => pm.ProjectId == projectId && pm.UserId == reporterUserId,
-            cancellationToken,
-            pm => pm.ProjectMemberAssignments);
-        
-        // add null check ???????????????????????????????????????????????????????????????
+            cancellationToken);
 
-        var projectMemberAssignment = new ProjectMemberAssignment
-        {
-            AssignmentId = assignment.Id,
-            ProjectMemberId = reporterProjectMember.Id,
-            IsReporter = true
-        };
+        if (reporterProjectMember is null)
+            throw new NotFoundException("Project member is not found");
         
-        reporterProjectMember.ProjectMemberAssignments.Add(projectMemberAssignment);
+        assignment.ReporterId = reporterProjectMember.Id;
+        
+        assignment = await _assignmentRepository.InsertAsync(assignment, cancellationToken);
         
         await _unitOfWork.SaveAsync();
 
@@ -72,7 +65,11 @@ public class AssignmentService : IAssignmentService
         Guid id,
         CancellationToken cancellationToken)
     {
-        var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
+        var assignment = await _assignmentRepository.GetAssignmentByIdAsync(id, cancellationToken);
+        
+        if (assignment == null)
+            throw new NotFoundException($"Assignment {id} not found.");
+        
         return _mapper.Map<AssignmentResponseDto>(assignment);
     }
 
@@ -82,12 +79,7 @@ public class AssignmentService : IAssignmentService
         int pageNumber,
         CancellationToken cancellationToken)
     {
-        var assignments = await _assignmentRepository.GetAllAsync(
-            pageSize,
-            pageNumber,
-            cancellationToken,
-            filter: a => a.ProjectId == projectId,
-            includes: a => a.AssignmentLabel);
+        var assignments = await _assignmentRepository.GetProjectAssignmentsAsync(projectId, cancellationToken);
 
         return _mapper.Map<IList<AssignmentResponseDto>>(assignments);
     }
@@ -98,12 +90,7 @@ public class AssignmentService : IAssignmentService
         int pageNumber,
         CancellationToken cancellationToken)
     {
-        var assignments = await _assignmentRepository.GetAllAsync(
-            pageSize,
-            pageNumber,
-            cancellationToken,
-            filter: a => a.ProjectId == projectId && a.IsPlanned,
-            includes: a => a.AssignmentLabel);
+        var assignments = await _assignmentRepository.GetProjectPlannedAssignmentsAsync(projectId, cancellationToken);
 
         return _mapper.Map<IList<AssignmentResponseDto>>(assignments);
     }
@@ -113,8 +100,11 @@ public class AssignmentService : IAssignmentService
         ChangeAssignmentStatusRequestDto request,
         CancellationToken cancellationToken)
     {
-        var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
+        var assignment = await _assignmentRepository.GetAssignmentByIdAsync(id, cancellationToken);
 
+        if (assignment == null)
+            throw new NotFoundException($"Assignment {id} not found.");
+        
         assignment.AssignmentStatusId = request.NewAssignmentStatusId;
         
         await _unitOfWork.SaveAsync();
@@ -127,7 +117,10 @@ public class AssignmentService : IAssignmentService
         ChangeAssignmentLabelRequestDto request, 
         CancellationToken cancellationToken)
     {
-        var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
+        var assignment = await _assignmentRepository.GetAssignmentByIdAsync(id, cancellationToken);
+        
+        if (assignment == null)
+            throw new NotFoundException($"Assignment {id} not found.");
         
         assignment.AssignmentLabelId = request.NewAssignmentLabelId;
         
@@ -137,11 +130,11 @@ public class AssignmentService : IAssignmentService
     }
 
     public async Task<AssignmentResponseDto> UpdateAssignmentAsync(
-    Guid id,
-    AssignmentUpdateRequestDto request,
-    CancellationToken cancellationToken)
+        Guid id,
+        AssignmentUpdateRequestDto request,
+        CancellationToken cancellationToken)
     {
-        var assignment = await _assignmentRepository.GetByIdAsync(id, cancellationToken);
+        var assignment = await _assignmentRepository.GetAssignmentByIdAsync(id, cancellationToken);
 
         if (assignment == null)
             throw new NotFoundException($"Assignment {id} not found.");
@@ -149,17 +142,14 @@ public class AssignmentService : IAssignmentService
         if (request.Name is not null)
             assignment.Name = request.Name;
 
-        if (request.Description is not null)
-            assignment.Description = request.Description;
-
-        if (request.Estimation.HasValue)
-            assignment.Estimation = request.Estimation.Value;
-
-        if (request.Deadline.HasValue)
-            assignment.Deadline = request.Deadline.Value;
-
-        if (request.IsPlanned.HasValue)
-            assignment.IsPlanned = request.IsPlanned.Value;
+        assignment.AssignmentStatusId = request.AssignmentStatusId;
+        assignment.Description = request.Description;
+        assignment.Estimation = request.Estimation;
+        assignment.IsPlanned = request.IsPlanned;
+        assignment.Deadline = request.Deadline;
+        assignment.CompletedDate = request.CompletedDate;
+        assignment.AssignmentLabelId = request.AssignmentLabelId;
+        assignment.AssigneeId = request.AssigneeId;
 
         await _unitOfWork.SaveAsync();
 
@@ -176,5 +166,23 @@ public class AssignmentService : IAssignmentService
         _assignmentRepository.Delete(assignment);
     
         await _unitOfWork.SaveAsync();
+    }
+    
+    public async Task<AssignmentResponseDto> AssignAssignmentAsync(
+        Guid id, 
+        Guid projectId,
+        AssignRequest request,
+        CancellationToken cancellationToken)
+    {
+        var assignment = await _assignmentRepository.GetAssignmentByIdAsync(id, cancellationToken);
+        
+        if (assignment == null)
+            throw new NotFoundException($"Assignment {id} not found.");
+
+        assignment.AssigneeId = request.AssigneeId;
+
+        await _unitOfWork.SaveAsync();
+        
+        return _mapper.Map<AssignmentResponseDto>(assignment);
     }
 }

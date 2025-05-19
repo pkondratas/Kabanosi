@@ -20,8 +20,9 @@ namespace Kabanosi.Entities
 
         [Timestamp] 
         public byte[] Version { get; set; } = [];
-
-        public ICollection<ProjectMemberAssignment> ProjectMemberAssignments { get; set; } = [];
+        
         public ICollection<Comment> Comments { get; set; } = [];
+        public ICollection<Assignment> ReportedAssignments { get; set; } = [];
+        public ICollection<Assignment> AssignedAssignments { get; set; } = [];
     }
 }

@@ -3,26 +3,34 @@
 import { AssignmentResponse } from "@/types/api/responses/assignment";
 import AssignmentCard from "./assignment-card";
 import { AssignmentStatusResponse } from "@/types/api/responses/assignment-status";
+import { ProjectMemberResponse } from "@/types/api/responses/project-member";
+import { AssignmentLabelResponse } from "@/types/api/responses/assignment-label";
 
 interface AssignmentColumnProps {
-  status: AssignmentStatusResponse;
+  projectId: string;
   assignments: AssignmentResponse[];
+  projectMembers: ProjectMemberResponse[];
+  status: AssignmentStatusResponse;
   onMoveLeft?: () => void;
   onMoveRight?: () => void;
   canMoveLeft: boolean;
   canMoveRight: boolean;
   statuses: AssignmentStatusResponse[];
+  labels: AssignmentLabelResponse[];
   onAssignmentStatusChange: (assignmentId: string, newStatusId: string) => void
 }
 
 export function AssignmentColumn({
-  status,
+  projectId,
   assignments,
+  projectMembers,
+  status,
   onMoveLeft,
   onMoveRight,
   canMoveLeft,
   canMoveRight,
   statuses,
+  labels,
   onAssignmentStatusChange
 }: AssignmentColumnProps) {
   return (
@@ -34,7 +42,14 @@ export function AssignmentColumn({
       </div>
       <div className="space-y-4">
         {assignments.map((assignment) => (
-          <AssignmentCard key={assignment.id} assignment={assignment} statuses={statuses} onStatusChange={onAssignmentStatusChange} />
+          <AssignmentCard 
+            projectId={projectId}
+            key={assignment.id} 
+            assignment={assignment} 
+            projectMembers={projectMembers}
+            statuses={statuses} 
+            labels={labels}
+            onStatusChange={onAssignmentStatusChange} />
         ))}
       </div>
     </div>

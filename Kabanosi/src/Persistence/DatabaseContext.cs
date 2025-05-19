@@ -10,7 +10,6 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
     public virtual DbSet<Invitation> Invitations { get; set; }
     public virtual DbSet<Project> Projects { get; set; }
     public virtual DbSet<ProjectMember> ProjectMembers { get; set; }
-    public virtual DbSet<ProjectMemberAssignment> ProjectMemberAssignments { get; set; }
     public virtual DbSet<Assignment> Assignments { get; set; }
     public virtual DbSet<AssignmentLabel> AssignmentLabels { get; set; }
     public virtual DbSet<AssignmentStatus> AssignmentStatuses { get; set; }
@@ -23,6 +22,18 @@ public class DatabaseContext(DbContextOptions<DatabaseContext> options) : DbCont
             .HasOne(a => a.AssignmentLabel)
             .WithMany(l => l.Assignments)
             .HasForeignKey(a => a.AssignmentLabelId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<Assignment>()
+            .HasOne(a => a.Reporter)
+            .WithMany(pm => pm.ReportedAssignments)
+            .HasForeignKey(a => a.ReporterId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Assignment>()
+            .HasOne(a => a.Assignee)
+            .WithMany(pm => pm.AssignedAssignments)
+            .HasForeignKey(a => a.AssigneeId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }

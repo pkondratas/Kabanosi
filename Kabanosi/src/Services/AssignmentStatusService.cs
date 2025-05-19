@@ -32,10 +32,7 @@ public class AssignmentStatusService : IAssignmentStatusService
         AssignmentStatusRequestDto request,
         CancellationToken cancellationToken)
     {
-        var assignmentStatuses = (await _assignmentStatusRepository.GetAllAsync(
-            filter: a => a.ProjectId == projectId,
-            asTracking: true,
-            cancellationToken: cancellationToken)).ToList();
+        var assignmentStatuses = (await _assignmentStatusRepository.GetAllAsync(cancellationToken: cancellationToken, filter: a => a.ProjectId == projectId, asTracking: true)).ToList();
         
         var assignmentStatus = new AssignmentStatus
         {
@@ -72,9 +69,7 @@ public class AssignmentStatusService : IAssignmentStatusService
         Guid projectId, 
         CancellationToken cancellationToken)
     {
-        var assignmentStatuses = await _assignmentStatusRepository.GetAllAsync(
-            filter: a => a.ProjectId == projectId,
-            cancellationToken: cancellationToken);
+        var assignmentStatuses = await _assignmentStatusRepository.GetAllAsync(cancellationToken: cancellationToken, filter: a => a.ProjectId == projectId);
         
         return assignmentStatuses.Select(_mapper.Map<AssignmentStatusResponseDto>);
     }
@@ -84,10 +79,7 @@ public class AssignmentStatusService : IAssignmentStatusService
         ReorderAssignmentStatusesRequestDto request,
         CancellationToken cancellationToken)
     {
-        var assignmentStatuses = (await _assignmentStatusRepository.GetAllAsync(
-            filter: a => a.ProjectId == projectId,
-            asTracking: true,
-            cancellationToken: cancellationToken)).ToList();
+        var assignmentStatuses = (await _assignmentStatusRepository.GetAllAsync(cancellationToken: cancellationToken, filter: a => a.ProjectId == projectId, asTracking: true)).ToList();
 
         if (assignmentStatuses.Count != request.IdsInOrder.Count)
             throw new ConflictException("Assignment status counts do not match.");

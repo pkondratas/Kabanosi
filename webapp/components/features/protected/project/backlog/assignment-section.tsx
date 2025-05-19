@@ -4,17 +4,32 @@ import { AssignmentResponse } from "@/types/api/responses/assignment";
 import AssignmentCard from "./assignment-card";
 import { useState } from "react";
 import { AssignmentStatusResponse } from "@/types/api/responses/assignment-status";
+import { AssignmentLabelResponse } from "@/types/api/responses/assignment-label";
+import { ProjectMemberResponse } from "@/types/api/responses/project-member";
 
 interface AssignmentSectionProps {
+  projectId: string;
 	title: string;
 	assignments: AssignmentResponse[];
 	statuses: AssignmentStatusResponse[];
+  labels: AssignmentLabelResponse[];
+  projectMembers: ProjectMemberResponse[];
 	onAddAssignment: (isPlanned: boolean, name: string) => void;
-	onStatusChange: (assignmentId: string, newStatusId: string) => void;
+	onIsPlannedChange: (assignmentId: string, isPlanned: boolean) => void;
 	isPlanned: boolean;
 }
 
-export default function AssignmentSection({ title, assignments, statuses, onAddAssignment, onStatusChange, isPlanned }: AssignmentSectionProps) {
+export default function AssignmentSection({ 
+  projectId,
+  title, 
+  assignments, 
+  statuses, 
+  labels,
+  projectMembers,
+  onAddAssignment, 
+  onIsPlannedChange, 
+  isPlanned 
+}: AssignmentSectionProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState("");
 
@@ -60,10 +75,13 @@ export default function AssignmentSection({ title, assignments, statuses, onAddA
       </div>
       <div>{assignments.map(a => 
 				<AssignmentCard 
-					key={a.id} 
+					key={a.id}
+          projectId={projectId} 
 					assignment={a}
 					statuses={statuses}
-					onStatusChange={onStatusChange} />)}
+          labels={labels}
+          projectMembers={projectMembers}
+					onIsPlannedChange={onIsPlannedChange} />)}
 			</div>
     </div>
 	);

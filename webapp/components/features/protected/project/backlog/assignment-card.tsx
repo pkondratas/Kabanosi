@@ -1,43 +1,87 @@
-"use client"
+"use client";
 
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { AssignmentResponse } from "@/types/api/responses/assignment";
+import { AssignmentLabelResponse } from "@/types/api/responses/assignment-label";
 import { AssignmentStatusResponse } from "@/types/api/responses/assignment-status";
+import { ProjectMemberResponse } from "@/types/api/responses/project-member";
 import { useState } from "react";
+import AssignmentDetailsDialog from "../shared/AssignmentDetailsDialog";
 
 interface AssignmentCardProps {
-	assignment: AssignmentResponse;
-	statuses: AssignmentStatusResponse[];
-	onStatusChange: (assignmentId: string, newStatusId: string) => void;
+  projectId: string;
+  assignment: AssignmentResponse;
+  projectMembers: ProjectMemberResponse[];
+  statuses: AssignmentStatusResponse[];
+  labels: AssignmentLabelResponse[];
+  onIsPlannedChange: (assignmentId: string, isPlanned: boolean) => void;
 }
 
-export default function AssignmentCard({ assignment, statuses, onStatusChange }: AssignmentCardProps) {
-	const [status, setStatus] = useState(assignment.assignmentStatusId);
+export default function AssignmentCard({
+  projectId,
+  assignment,
+  projectMembers,
+  statuses,
+  labels,
+  onIsPlannedChange,
+}: AssignmentCardProps) {
+  const [dialogOpened, setDialogOpened] = useState(false);
+  const [localAssignment, setLocalAssignment] = useState(assignment);
 
-	const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-		const newStatusId = e.target.value;
+  const handleSaveChanges = (updatedAssignment: AssignmentResponse) => {
+		if (updatedAssignment.isPlanned !== localAssignment.isPlanned)
+			onIsPlannedChange(updatedAssignment.id, updatedAssignment.isPlanned);
+    setLocalAssignment(updatedAssignment);
+    setDialogOpened(false);
+  };
 
-		setStatus(newStatusId);
-		onStatusChange(assignment.id, newStatusId);
-	};
+  return (
+    <Dialog open={dialogOpened} onOpenChange={setDialogOpened}>
+      <div className="bg-white px-6 py-2 shadow rounded-lg mb-2 w-full flex items-center justify-between">
+        <DialogTrigger asChild>
+          <div className="w-full flex items-center justify-between">
+            <h3 className="text-base font-medium">{localAssignment.name}</h3>
 
-	return (
-		<div className="bg-white px-6 py-2 shadow rounded-lg mb-2 w-full flex items-center justify-between">
-			<h3 className="text-base font-medium">{assignment.name}</h3>
+            <div className="flex items-center space-x-3">
+              <p className="text-sm text-gray-600">
+                Label: {localAssignment.assignmentLabelId
+                ? labels.find((l) => l.id == localAssignment.assignmentLabelId)
+                    ?.name
+                : "None"}
+              </p>
+              <p className="text-sm text-gray-600">
+                Assignee: {localAssignment.assigneeId
+                ? projectMembers.find(
+                    (pm) => pm.id == localAssignment.assigneeId
+                  )?.username
+                : "Unassigned"}
+              </p>
+							<p className="text-sm text-gray-600">
+								Estimation: {localAssignment.estimation ?? "None"}
+							</p>
+							<p className="text-sm text-gray-600">
+								Status: {statuses.find(s => s.id == localAssignment.assignmentStatusId)?.name}
+							</p>
+            </div>
+          </div>
+        </DialogTrigger>
+      </div>
 
-			<div className="flex items-center space-x-3">
-				<p className="text-sm text-gray-600">Label: {assignment.assignmentLabelName ? assignment.assignmentLabelName : "None"}</p>
-				<select
-					className="ml-4 border border-gray-300 rounded px-2 py-1 text-sm"
-					value={status}
-					onChange={handleStatusChange}
-				>
-					{statuses.map(s => (
-						<option key={s.id} value={s.id}>
-							{s.name}
-						</option>
-					))}
-				</select>
-			</div>
-		</div>
-	);
+      <DialogContent
+        onClose={() => setDialogOpened(false)}
+        className="max-w-[600px]"
+      >
+        <AssignmentDetailsDialog
+          projectId={projectId}
+          assignment={localAssignment}
+          projectMembers={projectMembers}
+          statuses={statuses}
+          labels={labels}
+          onChangesSaved={(updatedAssignment) =>
+            handleSaveChanges(updatedAssignment)
+          }
+        />
+      </DialogContent>
+    </Dialog>
+  );
 }

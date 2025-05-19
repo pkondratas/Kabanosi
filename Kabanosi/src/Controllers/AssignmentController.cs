@@ -51,8 +51,6 @@ public class AssignmentController : ControllerBase
         CancellationToken cancellationToken = default)
     {
         var assignment = await _assignmentService.GetAssignmentByIdAsync(id, cancellationToken);
-        if (assignment == null)
-            return NotFound();
 
         return Ok(assignment);
     }
@@ -133,7 +131,7 @@ public class AssignmentController : ControllerBase
         return NoContent();
     }
 
-    [HttpPatch("{id}")]
+    [HttpPut("{id}")]
     [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
     public async Task<IActionResult> UpdateAssignmentAsync(
         [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
@@ -144,5 +142,19 @@ public class AssignmentController : ControllerBase
     {
         var result = await _assignmentService.UpdateAssignmentAsync(id, request, cancellationToken);
         return Ok(result);
+    }
+
+    [HttpPatch("{id}/assign")]
+    [Authorize(Policy = "ProjectMemberAndAdminOrMember")]
+    public async Task<IActionResult> AssignAssignmentAsync(
+        [SwaggerParameter("Project ID used for project-scoped authorization")] [FromHeader(Name = "X-Project-Id")]
+        Guid projectId,
+        [FromRoute] Guid id,
+        [FromBody] AssignRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        var response = await _assignmentService.AssignAssignmentAsync(id, projectId, request, cancellationToken);
+
+        return Ok(response);
     }
 } 
