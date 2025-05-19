@@ -43,4 +43,10 @@ public interface IAssignmentService
         Guid id,
         AssignmentUpdateRequestDto request,
         CancellationToken cancellationToken);
+
+    Task<AssignmentResponseDto> AssignAssignmentAsync(
+        Guid id,
+        Guid projectId,
+        AssignRequest request,
+        CancellationToken cancellationToken);
 } 

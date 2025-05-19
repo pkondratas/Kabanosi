@@ -4,6 +4,7 @@ using Kabanosi.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Kabanosi.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250518131818_RemovedProjectMemberAssignmentsTable")]
+    partial class RemovedProjectMemberAssignmentsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,16 +40,16 @@ namespace Kabanosi.Migrations
                     b.Property<Guid>("AssignmentStatusId")
                         .HasColumnType("char(36)");
 
-                    b.Property<DateOnly?>("CompletedDate")
+                    b.Property<DateOnly>("CompletedDate")
                         .HasColumnType("date");
 
-                    b.Property<DateOnly?>("Deadline")
+                    b.Property<DateOnly>("Deadline")
                         .HasColumnType("date");
 
                     b.Property<string>("Description")
                         .HasColumnType("longtext");
 
-                    b.Property<int?>("Estimation")
+                    b.Property<int>("Estimation")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsPlanned")

@@ -9,16 +9,22 @@ import {
   reorderAssignmentStatuses,
 } from "@/lib/actions/assignment-status.actions";
 import { changeAssignmentStatus } from "@/lib/actions/assignment.actions";
+import { AssignmentLabelResponse } from "@/types/api/responses/assignment-label";
+import { ProjectMemberResponse } from "@/types/api/responses/project-member";
 
 interface WorkingPaneProps {
   initialStatuses: AssignmentStatusResponse[];
   assignments: AssignmentResponse[];
+  projectMembers: ProjectMemberResponse[];
+  labels: AssignmentLabelResponse[];
   projectId: string;
 }
 
 export function WorkingPane({
   initialStatuses,
   assignments,
+  projectMembers,
+  labels,
   projectId,
 }: WorkingPaneProps) {
   const [statuses, setStatuses] = useState(initialStatuses);
@@ -61,30 +67,27 @@ export function WorkingPane({
     reorderAssignmentStatuses(projectId, { idsInOrder: newOrder });
   };
 
-  const handleAssignmentStatusChange = (
-    assignmentId: string,
-    newStatusId: string
-  ) => {
+  const handleAssignmentStatusChange = async (assignmentId: string, newStatusId: string) => {
+    const updatedAssignment = await changeAssignmentStatus(projectId, assignmentId, newStatusId);
+
     setAssignmentsByStatus((prev) => {
       const updated = { ...prev };
       const currentStatusId = Object.keys(updated).find((key) =>
         updated[key].some((a) => a.id === assignmentId)
       );
-      if (!currentStatusId || currentStatusId === newStatusId) return prev;
-      updated[currentStatusId] = updated[currentStatusId].filter(
-        (a) => a.id !== assignmentId
-      );
-      const movedAssignment = prev[currentStatusId].find(
-        (a) => a.id === assignmentId
-      );
-      if (movedAssignment) {
-        movedAssignment.assignmentStatusId = newStatusId;
-        if (!updated[newStatusId]) updated[newStatusId] = [];
-        updated[newStatusId] = [...updated[newStatusId], movedAssignment];
-      }
+
+      if (!currentStatusId || currentStatusId === newStatusId) 
+        return prev;
+
+      updated[currentStatusId] = updated[currentStatusId].filter((a) => a.id !== assignmentId);
+
+      if (!updated[newStatusId]) 
+        updated[newStatusId] = [];
+
+      updated[newStatusId] = [...updated[newStatusId], updatedAssignment];
+
       return updated;
     });
-    changeAssignmentStatus(projectId, assignmentId, newStatusId);
   };
 
   const handleCreateStatus = async () => {
@@ -148,14 +151,17 @@ export function WorkingPane({
           if (!status) return null;
           return (
             <AssignmentColumn
+              projectId={projectId}
               key={status.id}
               status={status}
               assignments={assignmentsByStatus[status.id] || []}
+              projectMembers={projectMembers}
               onMoveLeft={() => moveStatusLeft(index)}
               onMoveRight={() => moveStatusRight(index)}
               canMoveLeft={index > 0}
               canMoveRight={index < statusOrder.length - 1}
               statuses={statuses}
+              labels={labels}
               onAssignmentStatusChange={handleAssignmentStatusChange}
             />
           );

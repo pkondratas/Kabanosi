@@ -115,3 +115,51 @@ export async function changeAssignmentStatus(
     
     return response.json()
 }
+
+export async function assignAssignment(
+    projectId: string,
+    assignmentId: string,
+    assigneeId?: string) : Promise<AssignmentResponse> {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/assignments/${assignmentId}/assign`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        },
+        body: JSON.stringify({ assigneeId: assigneeId })
+    })
+
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+}
+
+export async function updateAssignment(
+    projectId: string,
+    assignmentId: string,
+    request: UpdateAssignmentRequest) : Promise<AssignmentResponse> {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/assignments/${assignmentId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        },
+        body: JSON.stringify(request)
+    })
+
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+}

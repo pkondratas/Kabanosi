@@ -28,7 +28,9 @@ public class MappingProfile : Profile
         // Assignment
         CreateMap<AssignmentRequestDto, Assignment>();
         CreateMap<Assignment, AssignmentResponseDto>()
-            .ForMember(dest => dest.AssignmentLabelName, opt => opt.MapFrom(src => src.AssignmentLabel == null ? null : src.AssignmentLabel.Name));
+            .ForMember(dest => dest.AssignmentLabelName,opt => opt.MapFrom(src => src.AssignmentLabel == null ? null : src.AssignmentLabel.Name))
+            .ForMember(dest => dest.AssigneeUsername, opt => opt.MapFrom(src => src.Assignee == null ? null : src.Assignee.User.UserName))
+            .ForMember(dest => dest.ReporterUsername, opt => opt.MapFrom(src => src.Reporter == null ? null : src.Reporter.User.UserName));
 
         // Invitation
         CreateMap<Invitation, InvitationResponseDto>()
