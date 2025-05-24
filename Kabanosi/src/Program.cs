@@ -185,6 +185,7 @@ app.UseExceptionHandling(
     {
         { typeof(ConflictException), HttpStatusCode.Conflict },
         { typeof(NotFoundException), HttpStatusCode.NotFound },
+        { typeof(DbUpdateConcurrencyException), HttpStatusCode.Conflict },
     });
 
 if (app.Environment.IsDevelopment())
