@@ -15,7 +15,7 @@ interface AssignmentSectionProps {
   labels: AssignmentLabelResponse[];
   projectMembers: ProjectMemberResponse[];
 	onAddAssignment: (isPlanned: boolean, name: string) => void;
-	onIsPlannedChange: (assignmentId: string, isPlanned: boolean) => void;
+	onIsPlannedChange: (updatedAssignment: AssignmentResponse, isPlanned: boolean) => void;
 	isPlanned: boolean;
 }
 

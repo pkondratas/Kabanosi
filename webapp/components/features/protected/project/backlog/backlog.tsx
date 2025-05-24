@@ -38,9 +38,9 @@ export default function Backlog({
     setAssignments([...assignments, newAssignment]);
   };
 
-  const handleIsPlannedChange = async (assignmentId: string, isPlanned: boolean) => {
+  const handleIsPlannedChange = async (updatedAssignment: AssignmentResponse, isPlanned: boolean) => {
     setAssignments((prev) =>
-      prev.map((assignment) => assignment.id === assignmentId ? { ...assignment, isPlanned } : assignment
+      prev.map((assignment) => assignment.id === updatedAssignment.id ? updatedAssignment : assignment
     ));
   };
 

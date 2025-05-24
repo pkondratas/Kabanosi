@@ -16,11 +16,7 @@ export default async function Page({
     getAssignmentLabels(projectId),
     getProjectMembers(projectId)
   ]);
-
-  for (let i = 0; i < assignments.length; i++) {
-    console.log(assignments[i].deadline + " " + assignments[i].completedDate);
-  }
-
+  
   return (
     <div className="flex min-h-screen w-full items-start justify-center p-6 md:p-10">
       <div className="w-full max-w-screen-lg">
