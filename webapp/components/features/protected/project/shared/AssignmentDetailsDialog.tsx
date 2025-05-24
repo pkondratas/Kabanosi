@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { AssignmentStatusResponse } from "@/types/api/responses/assignment-statu
 import { ProjectMemberResponse } from "@/types/api/responses/project-member";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AssignmentLabelResponse } from "@/types/api/responses/assignment-label";
-import { updateAssignment } from "@/lib/actions/assignment.actions";
+import { getAssignment, updateAssignment } from "@/lib/actions/assignment.actions";
 
 interface AssignmentDetailsDialogProps {
   projectId: string;
@@ -37,15 +37,21 @@ export default function AssignmentDetailsDialog({
   const [isPlanned, setIsPlanned] = useState(assignment.isPlanned);
   const [estimation, setEstimation] = useState(assignment.estimation);
 
-  const [hasDeadline, setHasdeadline] = useState(assignment.deadline != undefined);
-  const [deadline, setDeadline] = useState(assignment.deadline);
+  // const [hasDeadline, setHasdeadline] = useState(assignment.deadline != undefined);
+  // const [deadline, setDeadline] = useState(assignment.deadline);
 
-  const [hasCompletedDate, setHasCompletedDate] = useState(assignment.completedDate != undefined);
-  const [completedDate, setCompletedDate] = useState(assignment.completedDate);
+  // const [hasCompletedDate, setHasCompletedDate] = useState(assignment.completedDate != undefined);
+  // const [completedDate, setCompletedDate] = useState(assignment.completedDate);
 
   const [assigneeId, setAssigneeId] = useState(assignment.assigneeId);
 
+  const [conflictOccured, setConflictOccured] = useState(false);
+
+  const originalRequestRef = useRef<UpdateAssignmentRequest | null>(null);
+
   const handleSave = async () => {
+    setConflictOccured(false);
+
     const request: UpdateAssignmentRequest = {
       name: name,
       description: description,
@@ -53,14 +59,49 @@ export default function AssignmentDetailsDialog({
       assignmentStatusId: statusId,
       isPlanned: isPlanned,
       estimation: estimation,
+      assigneeId: assigneeId
       //deadline: hasDeadline ? deadline : undefined,
       //completedDate: hasCompletedDate ? completedDate : undefined,
-      assigneeId: assigneeId
     };
 
-    var updatedAssignment = await updateAssignment(projectId, assignment.id, request);
-    onChangesSaved(updatedAssignment);
+    originalRequestRef.current = request;
+
+    try {
+      const updatedAssignment = await updateAssignment(projectId, assignment.id, request);
+      onChangesSaved(updatedAssignment);
+    } catch (error: any) {
+      if (error?.name == 'ConflictError')
+        setConflictOccured(true);
+    }
   };
+
+  const handleForceSave = async () => {
+    if (!originalRequestRef.current) 
+      return;
+    
+    const updatedAssignment = await updateAssignment(projectId, assignment.id, originalRequestRef.current);
+    onChangesSaved(updatedAssignment);
+
+    setConflictOccured(false); 
+  };
+
+  const handleUpdateInformation = async () => {
+    const updatedAssignment = await getAssignment(projectId, assignment.id);
+
+    setName(updatedAssignment.name);
+    setDescription(updatedAssignment.description);
+    setStatusId(updatedAssignment.assignmentStatusId);
+    setLabelId(updatedAssignment.assignmentLabelId);
+    setIsPlanned(updatedAssignment.isPlanned);
+    setEstimation(updatedAssignment.estimation);
+    setAssigneeId(updatedAssignment.assigneeId);
+    //setDeadline(updatedAssignment.deadline);
+    //setHasdeadline(updatedAssignment.deadline != undefined);
+    //setCompletedDate(updatedAssignment.completedDate);
+    //setHasCompletedDate(updatedAssignment.completedDate != undefined);
+
+    setConflictOccured(false);
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -152,7 +193,7 @@ export default function AssignmentDetailsDialog({
         />
       </div>
 
-      <div>
+      {/* <div>
         <Label className="mb-1 flex items-center gap-2">
           Deadline Scheduled
           <input
@@ -208,7 +249,7 @@ export default function AssignmentDetailsDialog({
         ) : (
           <></>
         )}
-      </div>
+      </div> */}
 
       <div>
         <Label className="mb-1">Assignee</Label>
@@ -233,7 +274,19 @@ export default function AssignmentDetailsDialog({
         <span>{assignment.reporterUsername}</span>
       </div>
 
-      <Button onClick={handleSave}>Save Changes</Button>
+      {conflictOccured && (
+        <div className="bg-red-100 text-red-700 p-3 rounded shadow">
+          <p className="mb-2 font-medium">A conflict occurred. The assignment was updated by someone else.</p>
+          <Button variant="outline" className="mr-2" onClick={handleForceSave}>
+            Force Save Changes
+          </Button>
+          <Button variant="outline" onClick={handleUpdateInformation}>
+            Update Information
+          </Button>
+        </div>
+      )}
+
+      {!conflictOccured && (<Button onClick={handleSave}>Save Changes</Button>)}
     </div>
   );
 }

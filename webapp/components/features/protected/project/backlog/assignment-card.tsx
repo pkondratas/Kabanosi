@@ -14,7 +14,7 @@ interface AssignmentCardProps {
   projectMembers: ProjectMemberResponse[];
   statuses: AssignmentStatusResponse[];
   labels: AssignmentLabelResponse[];
-  onIsPlannedChange: (assignmentId: string, isPlanned: boolean) => void;
+  onIsPlannedChange: (updatedAssignment: AssignmentResponse, isPlanned: boolean) => void;
 }
 
 export default function AssignmentCard({
@@ -30,7 +30,7 @@ export default function AssignmentCard({
 
   const handleSaveChanges = (updatedAssignment: AssignmentResponse) => {
 		if (updatedAssignment.isPlanned !== localAssignment.isPlanned)
-			onIsPlannedChange(updatedAssignment.id, updatedAssignment.isPlanned);
+			onIsPlannedChange(updatedAssignment, updatedAssignment.isPlanned);
     setLocalAssignment(updatedAssignment);
     setDialogOpened(false);
   };

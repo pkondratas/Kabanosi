@@ -11,6 +11,7 @@ import {
 import { changeAssignmentStatus } from "@/lib/actions/assignment.actions";
 import { AssignmentLabelResponse } from "@/types/api/responses/assignment-label";
 import { ProjectMemberResponse } from "@/types/api/responses/project-member";
+import { Button } from "@/components/ui/button";
 
 interface WorkingPaneProps {
   initialStatuses: AssignmentStatusResponse[];
@@ -119,13 +120,13 @@ export function WorkingPane({
               value={newStatusName}
               onChange={(e) => setNewStatusName(e.target.value)}
             />
-            <button
+            <Button
               className="bg-blue-500 text-white px-3 py-1 rounded"
               onClick={handleCreateStatus}
             >
               Create
-            </button>
-            <button
+            </Button>
+            <Button
               className="bg-gray-300 text-black px-3 py-1 rounded"
               onClick={() => {
                 setIsCreatingStatus(false);
@@ -133,15 +134,15 @@ export function WorkingPane({
               }}
             >
               Cancel
-            </button>
+            </Button>
           </div>
         ) : (
-          <button
-            className="bg-green-500 text-white px-4 py-2 rounded"
+          <Button
+            className="bg-blue-500 text-white px-4 py-2 rounded"
             onClick={() => setIsCreatingStatus(true)}
           >
             Create New Status
-          </button>
+          </Button>
         )}
       </div>
 

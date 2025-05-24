@@ -10,7 +10,6 @@ if (process.env.NODE_ENV === 'development') {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 }
 
-
 async function getErrorMessage(response: { headers: { get(name: string): string | null }, json(): Promise<any>, text(): Promise<string> }): Promise<string> {
     const contentType = response.headers.get('content-type')
     if (contentType?.includes('application/json')) {
@@ -29,6 +28,13 @@ async function getToken() : Promise<string> {
     }
 
     return token
+}
+
+class ConflictError extends Error {
+    constructor() {
+        super("Conflict Error");
+        this.name = "ConflictError";
+    }
 }
 
 export async function getPlannedAssignments(projectId: string) : Promise<AssignmentResponse[]> {
@@ -55,6 +61,26 @@ export async function getAssignments(projectId: string) : Promise<AssignmentResp
     const token = await getToken()
 
     const response = await fetch(`${API_URL}/api/v1/assignments?pageSize=50&pageNumber=0`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'X-Project-Id': projectId
+        }
+    })
+    
+    if (!response.ok) {
+        const errorMessage = await getErrorMessage(response)
+        throw new Error(errorMessage)
+    }
+    
+    return response.json()
+}
+
+export async function getAssignment(projectId: string, assignmentId: string): Promise<AssignmentResponse> {
+    const token = await getToken()
+
+    const response = await fetch(`${API_URL}/api/v1/assignments/${assignmentId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -157,9 +183,13 @@ export async function updateAssignment(
     })
 
     if (!response.ok) {
+        if (response.status == 409) {
+            throw new ConflictError()
+        }
+
         const errorMessage = await getErrorMessage(response)
         throw new Error(errorMessage)
     }
-    
+
     return response.json()
 }
