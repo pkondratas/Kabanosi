@@ -29,7 +29,7 @@ export function WorkingPane({
   projectId,
 }: WorkingPaneProps) {
   const [statuses, setStatuses] = useState(initialStatuses);
-  const [statusOrder, setStatusOrder] = useState<string[]>(initialStatuses.map((s) => s.id));
+  const [statusOrder, setStatusOrder] = useState<string[]>(initialStatuses.slice().sort((a, b) => a.order - b.order).map((s) => s.id));
   const [assignmentsByStatus, setAssignmentsByStatus] = useState<{
     [key: string]: AssignmentResponse[];
   }>(() => {
